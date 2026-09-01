@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BASE */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #f8f9fa;
+  color: #222222;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* LINKS */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* SELEÇÃO */
+::selection {
+  background: #ff6b00;
+  color: white;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ececec;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6b00;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff7f11;
+}
+
+/* SOMBRAS */
+.shadow-soft {
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* CARD */
+.card-default {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 2rem;
+}
+
+/* HOVER */
+.hover-lift {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 15px 40px rgba(255, 107, 0, 0.12);
+  border-color: #ff6b00;
+}
