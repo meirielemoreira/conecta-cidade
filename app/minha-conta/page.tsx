@@ -25,6 +25,13 @@ type AgendaResumo = {
   data_expiracao: string | null;
 };
 
+
+type AnuncioResumo = {
+  aprovado: boolean | null;
+  ativo: boolean | null;
+  status: string | null;
+  data_expiracao: string | null;
+};
 function calcularDiasRestantes(
   dataExpiracao?: string | null
 ) {
