@@ -83,6 +83,60 @@ function LoginConteudo() {
     }
   };
 
+  const recuperarSenha = async () => {
+    limparMensagens();
+
+    const emailLimpo = email
+      .trim()
+      .toLowerCase();
+
+    if (!emailLimpo) {
+      setErro(
+        'Informe seu e-mail para recuperar a senha.'
+      );
+      return;
+    }
+
+    setCarregando(true);
+
+    try {
+      const origem = window.location.origin;
+
+      const redirectTo =
+        `${origem}/auth/callback` +
+        `?next=${encodeURIComponent(
+          '/redefinir-senha'
+        )}`;
+
+      const { error } =
+        await supabase.auth.resetPasswordForEmail(
+          emailLimpo,
+          {
+            redirectTo,
+          }
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      setSucesso(
+        'Enviamos um link para redefinir sua senha. Confira seu e-mail.'
+      );
+    } catch (erroDesconhecido) {
+      const mensagem =
+        erroDesconhecido instanceof Error
+          ? erroDesconhecido.message
+          : 'Não foi possível enviar o e-mail de recuperação.';
+
+      setErro(
+        traduzirErroAutenticacao(mensagem)
+      );
+    } finally {
+      setCarregando(false);
+    }
+  };
+
   const enviarFormulario = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -319,6 +373,19 @@ function LoginConteudo() {
             />
           </div>
 
+          {modo === 'entrar' && (
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={recuperarSenha}
+                disabled={carregando}
+                className="text-sm font-semibold text-orange-700 hover:text-orange-900 disabled:opacity-50"
+              >
+                Esqueci minha senha
+              </button>
+            </div>
+          )}
+
           {erro && (
             <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
               {erro}
@@ -358,7 +425,6 @@ function LoginConteudo() {
     </main>
   );
 }
-
 
 function CarregandoLogin() {
   return (
