@@ -166,7 +166,7 @@ function AnunciarConteudo() {
   const [
     planoSelecionado,
     setPlanoSelecionado,
-  ] = useState('');
+  ] = useState('Gratuito');
 
   const [categorias, setCategorias] =
     useState<Categoria[]>([]);
@@ -183,6 +183,9 @@ function AnunciarConteudo() {
     useState('');
 
   const [successMsg, setSuccessMsg] =
+    useState('');
+
+  const [imageErrorMsg, setImageErrorMsg] =
     useState('');
 
   const [imagens, setImagens] =
@@ -630,9 +633,11 @@ function AnunciarConteudo() {
     const input = event.target;
 
     if (!planoInfo) {
-      setErrorMsg(
-        'Selecione um plano antes de escolher as fotos.'
-      );
+      const mensagem =
+        'Selecione um plano antes de escolher as fotos.';
+
+      setErrorMsg(mensagem);
+      setImageErrorMsg(mensagem);
 
       input.value = '';
       return;
@@ -646,15 +651,19 @@ function AnunciarConteudo() {
       imagens.length + files.length >
       planoInfo.fotosMax
     ) {
-      setErrorMsg(
-        `O Plano ${planoSelecionado} permite no máximo ${planoInfo.fotosMax} fotos.`
-      );
+      const mensagem =
+        `O Plano ${planoSelecionado} permite no máximo ${planoInfo.fotosMax} fotos.`;
+
+      setErrorMsg(mensagem);
+      setImageErrorMsg(mensagem);
 
       input.value = '';
       return;
     }
 
     try {
+      setImageErrorMsg('');
+
       for (const file of files) {
         if (
           !TIPOS_IMAGEM_PERMITIDOS.includes(
@@ -725,6 +734,7 @@ function AnunciarConteudo() {
       );
 
       setErrorMsg('');
+      setImageErrorMsg('');
 
       setSuccessMsg(
         `${files.length} foto(s) adicionada(s) com sucesso.`
@@ -736,6 +746,7 @@ function AnunciarConteudo() {
           : 'Não foi possível adicionar as imagens.';
 
       setErrorMsg(mensagem);
+      setImageErrorMsg(mensagem);
     } finally {
       input.value = '';
     }
@@ -1540,11 +1551,7 @@ function AnunciarConteudo() {
                       Preço (R$)
                     </label>
 
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">
-                        R$
-                      </span>
-
+                    <div>
                       <input
                         id="preco"
                         type="text"
@@ -1556,7 +1563,7 @@ function AnunciarConteudo() {
                         inputMode="numeric"
                         autoComplete="off"
                         placeholder="0,00"
-                        className="min-h-12 w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                        className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                       />
                     </div>
 
@@ -1612,6 +1619,12 @@ function AnunciarConteudo() {
                     }
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-700 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-sky-800 disabled:bg-slate-100"
                   />
+
+                  {imageErrorMsg && (
+                    <div className="mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                      {imageErrorMsg}
+                    </div>
+                  )}
 
                   <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-slate-700">
                     <p className="font-bold text-amber-800">

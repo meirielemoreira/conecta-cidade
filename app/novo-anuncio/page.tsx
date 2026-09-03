@@ -126,12 +126,12 @@ function NovoAnuncioConteudo() {
           )}
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              href="/"
-              className="rounded-2xl bg-slate-900 px-10 py-4 font-semibold text-white transition hover:bg-black"
-            >
-              ← Voltar para o início
-            </Link>
+<Link
+  href="/"
+  className="rounded-2xl border border-slate-300 bg-white px-10 py-4 font-semibold text-slate-900 transition hover:bg-slate-100"
+>
+  ← Voltar para o início
+</Link>
 
             <Link
               href="/anunciar"
