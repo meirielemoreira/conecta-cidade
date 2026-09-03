@@ -1,6 +1,5 @@
 'use client';
 
-import Header from '../../components/Header';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -53,7 +52,6 @@ function NovoAnuncioConteudo() {
 
   return (
     <>
-      <Header />
 
       <main className="min-h-screen bg-slate-50 py-16">
         <div className="mx-auto max-w-2xl px-6 text-center">
