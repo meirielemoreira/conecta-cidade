@@ -95,6 +95,28 @@ function normalizarPreco(valor: unknown): number | null {
   return Number.isFinite(numero) ? numero : null;
 }
 
+function formatarPrecoDigitado(valor: string): string {
+  const somenteNumeros = valor.replace(/\D/g, '');
+
+  if (!somenteNumeros) return '';
+
+  const numero = Number(somenteNumeros) / 100;
+
+  return numero.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatarPrecoParaCampo(valor?: number | null): string {
+  if (valor === null || valor === undefined) return '';
+
+  return Number(valor).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 function formatarPreco(valor?: number | null) {
   if (valor === null || valor === undefined) return 'Sem preço';
 
@@ -124,6 +146,7 @@ export default function AnunciosAdmin() {
 
   const [modalAnuncioAberto, setModalAnuncioAberto] = useState(false);
   const [anuncioEditando, setAnuncioEditando] = useState<Anuncio | null>(null);
+  const [precoEdicao, setPrecoEdicao] = useState('');
   const [novaFotoEdicao, setNovaFotoEdicao] = useState<File | null>(null);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
 
@@ -398,6 +421,7 @@ export default function AnunciosAdmin() {
       ativo: anuncio.ativo ?? true,
       destaque: anuncio.destaque ?? false,
     });
+    setPrecoEdicao(formatarPrecoParaCampo(anuncio.preco));
     setNovaFotoEdicao(null);
     setModalAnuncioAberto(true);
   };
@@ -434,7 +458,7 @@ export default function AnunciosAdmin() {
           email: anuncioEditando.email?.trim() || null,
           instagram: anuncioEditando.instagram?.trim() || null,
           descricao: anuncioEditando.descricao?.trim() || null,
-          preco: normalizarPreco(anuncioEditando.preco),
+          preco: normalizarPreco(precoEdicao),
           categoria: anuncioEditando.categoria || null,
           tipo: tipoPelaCategoria(anuncioEditando.categoria || ''),
           cidade: anuncioEditando.cidade?.trim() || 'Nova União',
@@ -455,6 +479,7 @@ export default function AnunciosAdmin() {
       alert('Alterações salvas.');
       setModalAnuncioAberto(false);
       setAnuncioEditando(null);
+      setPrecoEdicao('');
       setNovaFotoEdicao(null);
       await carregarDados();
     } catch (error) {
@@ -528,7 +553,16 @@ export default function AnunciosAdmin() {
             <CampoAdmin label="Telefone" value={novoAnuncio.telefone} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, telefone: valor })} />
             <CampoAdmin label="E-mail" type="email" value={novoAnuncio.email} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, email: valor })} />
             <CampoAdmin label="Instagram" value={novoAnuncio.instagram} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, instagram: valor })} />
-            <CampoAdmin label="Preço" type="number" value={novoAnuncio.preco} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, preco: valor })} />
+            <CampoAdmin
+              label="Preço"
+              value={novoAnuncio.preco}
+              onChange={(valor) =>
+                setNovoAnuncio({
+                  ...novoAnuncio,
+                  preco: formatarPrecoDigitado(valor),
+                })
+              }
+            />
             <SelecaoAdmin label="Categoria *" value={novoAnuncio.categoria} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, categoria: valor })} options={categorias.map((categoria) => ({ value: categoria.nome, label: categoria.nome }))} placeholder="Selecione a categoria" />
             <SelecaoAdmin label="Plano" value={novoAnuncio.plano_usado} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, plano_usado: valor })} options={planos.map((plano) => ({ value: plano, label: plano }))} />
             <SelecaoAdmin label="Pagamento" value={novoAnuncio.payment_status} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, payment_status: valor })} options={pagamentos.map((pagamento) => ({ value: pagamento, label: pagamento }))} />
@@ -638,13 +672,30 @@ export default function AnunciosAdmin() {
           <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-4xl max-h-[92vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold">Editar anúncio</h3>
-              <button type="button" onClick={() => { setModalAnuncioAberto(false); setAnuncioEditando(null); }} className="w-10 h-10 rounded-full bg-slate-100 text-xl">×</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalAnuncioAberto(false);
+                  setAnuncioEditando(null);
+                  setPrecoEdicao('');
+                  setNovaFotoEdicao(null);
+                }}
+                className="w-10 h-10 rounded-full bg-slate-100 text-xl"
+              >
+                ×
+              </button>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <CampoAdmin label="Título do anúncio" value={anuncioEditando.titulo || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, titulo: valor })} />
               <CampoAdmin label="Anunciante" value={anuncioEditando.nome_loja || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, nome_loja: valor })} />
-              <CampoAdmin label="Preço" type="number" value={anuncioEditando.preco == null ? '' : String(anuncioEditando.preco)} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, preco: valor === '' ? null : Number(valor) })} />
+              <CampoAdmin
+                label="Preço"
+                value={precoEdicao}
+                onChange={(valor) =>
+                  setPrecoEdicao(formatarPrecoDigitado(valor))
+                }
+              />
               <SelecaoAdmin label="Categoria" value={anuncioEditando.categoria || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, categoria: valor })} options={categorias.map((categoria) => ({ value: categoria.nome, label: categoria.nome }))} placeholder="Selecione a categoria" />
               <CampoAdmin label="Telefone" value={anuncioEditando.telefone || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, telefone: valor })} />
               <CampoAdmin label="E-mail" type="email" value={anuncioEditando.email || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, email: valor })} />
@@ -691,7 +742,18 @@ export default function AnunciosAdmin() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-7">
-              <button type="button" onClick={() => { setModalAnuncioAberto(false); setAnuncioEditando(null); setNovaFotoEdicao(null); }} className="flex-1 py-4 bg-slate-200 rounded-2xl">Cancelar</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalAnuncioAberto(false);
+                  setAnuncioEditando(null);
+                  setPrecoEdicao('');
+                  setNovaFotoEdicao(null);
+                }}
+                className="flex-1 py-4 bg-slate-200 rounded-2xl"
+              >
+                Cancelar
+              </button>
               <button type="button" onClick={salvarEdicaoAnuncio} disabled={salvandoEdicao} className="flex-1 py-4 bg-green-600 disabled:bg-slate-400 text-white rounded-2xl">{salvandoEdicao ? 'Salvando...' : 'Salvar alterações'}</button>
             </div>
           </div>
