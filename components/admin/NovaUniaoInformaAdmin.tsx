@@ -11,6 +11,7 @@ import {
 import { supabase } from '../../lib/supabase';
 
 const BUCKET = 'imagens-anuncios';
+const CHAVE_RASCUNHO = 'nova-uniao-informa-rascunho';
 
 type Informativo = {
   id: string;
@@ -116,7 +117,7 @@ function normalizarTexto(valor: string): string | null {
   return texto.length > 0 ? texto : null;
 }
 
-function criarNomeArquivo(arquivo: File): string {
+function criarNomeArquivo(arquivo: File, userId: string): string {
   const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase();
   const extensao = extensaoOriginal || 'jpg';
 
@@ -133,7 +134,7 @@ function criarNomeArquivo(arquivo: File): string {
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  return `nova-uniao-informa/${Date.now()}-${identificador}-${
+  return `${userId}/nova-uniao-informa/${Date.now()}-${identificador}-${
     nomeBase || 'imagem'
   }.${extensao}`;
 }
@@ -187,6 +188,7 @@ export default function NovaUniaoInformaAdmin() {
   const [idEdicao, setIdEdicao] = useState<string | null>(null);
   const [arquivoImagem, setArquivoImagem] = useState<File | null>(null);
   const [previewImagem, setPreviewImagem] = useState('');
+  const [rascunhoCarregado, setRascunhoCarregado] = useState(false);
 
   const [busca, setBusca] = useState('');
   const [filtroStatus, setFiltroStatus] = useState<
@@ -243,6 +245,54 @@ export default function NovaUniaoInformaAdmin() {
     carregarInformativos();
   }, [carregarInformativos]);
 
+  // Recupera automaticamente o rascunho de um novo informativo.
+  useEffect(() => {
+    try {
+      const rascunhoSalvo = window.localStorage.getItem(CHAVE_RASCUNHO);
+
+      if (rascunhoSalvo) {
+        const dados = JSON.parse(rascunhoSalvo) as Partial<FormularioInformativo>;
+
+        setFormulario((estadoAtual) => ({
+          ...estadoAtual,
+          ...dados,
+          publicar_em: dados.publicar_em || estadoAtual.publicar_em,
+        }));
+      }
+    } catch (error) {
+      console.warn('Não foi possível recuperar o rascunho:', error);
+    } finally {
+      setRascunhoCarregado(true);
+    }
+  }, []);
+
+  // Mantém os campos do novo informativo salvos no navegador.
+  useEffect(() => {
+    if (!rascunhoCarregado || idEdicao) {
+      return;
+    }
+
+    const possuiConteudo =
+      formulario.titulo.trim() ||
+      formulario.descricao.trim() ||
+      formulario.imagem_url.trim() ||
+      formulario.link_url.trim() ||
+      formulario.data_inicio ||
+      formulario.data_vencimento ||
+      formulario.encerrar_publicacao_em;
+
+    if (!possuiConteudo) {
+      window.localStorage.removeItem(CHAVE_RASCUNHO);
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(CHAVE_RASCUNHO, JSON.stringify(formulario));
+    } catch (error) {
+      console.warn('Não foi possível salvar o rascunho:', error);
+    }
+  }, [formulario, idEdicao, rascunhoCarregado]);
+
   useEffect(() => {
     return () => {
       if (previewImagem.startsWith('blob:')) {
@@ -264,6 +314,7 @@ export default function NovaUniaoInformaAdmin() {
     setIdEdicao(null);
     setArquivoImagem(null);
     setPreviewImagem('');
+    window.localStorage.removeItem(CHAVE_RASCUNHO);
   }, [previewImagem]);
 
   const informativosFiltrados = useMemo(() => {
@@ -379,7 +430,18 @@ export default function NovaUniaoInformaAdmin() {
 
     setEnviandoImagem(true);
 
-    const caminho = criarNomeArquivo(arquivoImagem);
+    const {
+      data: { user },
+      error: erroUsuario,
+    } = await supabase.auth.getUser();
+
+    if (erroUsuario || !user) {
+      setEnviandoImagem(false);
+      throw new Error('Usuário não autenticado para enviar a imagem.');
+    }
+
+    // A policy do Storage exige o ID do usuário autenticado na primeira pasta.
+    const caminho = criarNomeArquivo(arquivoImagem, user.id);
 
     const { error: erroUpload } = await supabase.storage
       .from(BUCKET)
@@ -441,6 +503,10 @@ export default function NovaUniaoInformaAdmin() {
 
     if (!validarLink(formulario.link_url)) {
       return 'Informe um link válido, começando com https:// ou /.';
+    }
+
+    if (!validarLink(formulario.imagem_url)) {
+      return 'Informe uma URL de imagem válida, começando com https://.';
     }
 
     return null;
@@ -1205,6 +1271,36 @@ export default function NovaUniaoInformaAdmin() {
 
                 Escolher imagem
               </label>
+
+              <div className="mt-4">
+                <label
+                  htmlFor="imagem_url"
+                  className="block text-sm font-bold text-slate-800"
+                >
+                  Ou usar URL da imagem
+                </label>
+
+                <input
+                  id="imagem_url"
+                  type="url"
+                  value={formulario.imagem_url}
+                  onChange={(event) => {
+                    atualizarCampo('imagem_url', event.target.value);
+
+                    if (!arquivoImagem) {
+                      setPreviewImagem(event.target.value.trim());
+                    }
+                  }}
+                  placeholder="https://site.com/imagem.jpg"
+                  disabled={Boolean(arquivoImagem)}
+                  className={`${classeCampo} mt-2 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
+                />
+
+                <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                  Se não enviar um arquivo, cole aqui o endereço direto de uma imagem pública.
+                  Se deixar vazio, será usada a imagem padrão de Nova União.
+                </p>
+              </div>
 
               {(arquivoImagem ||
                 formulario.imagem_url ||
