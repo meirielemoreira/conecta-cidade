@@ -68,6 +68,7 @@ export default function InformativoCard({
 
   const dataInicio = formatarData(informativo.data_inicio);
   const dataFinal = formatarData(informativo.data_vencimento);
+
   const dataPublicacao = formatarData(
     informativo.publicar_em || informativo.created_at
   );
@@ -79,6 +80,7 @@ export default function InformativoCard({
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+        style={{ color: '#ffffff' }}
       >
         {textoBotao}
       </a>
@@ -86,6 +88,7 @@ export default function InformativoCard({
       <Link
         href={informativo.link_url}
         className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-700"
+        style={{ color: '#ffffff' }}
       >
         {textoBotao}
       </Link>
