@@ -164,14 +164,27 @@ export default function AgendaAdmin() {
   }, []);
 
   const enviarImagem = async (arquivo: File, pasta: string): Promise<string> => {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      throw new Error('Usuário não autenticado.');
+    }
+
     const extensao = arquivo.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const nomeArquivo = `${pasta}/${Date.now()}-${Math.random()
+
+    const nomeArquivo = `${user.id}/${pasta}/${Date.now()}-${Math.random()
       .toString(36)
       .slice(2)}.${extensao}`;
 
     const { error } = await supabase.storage
       .from('imagens-anuncios')
-      .upload(nomeArquivo, arquivo, { cacheControl: '3600', upsert: false });
+      .upload(nomeArquivo, arquivo, {
+        cacheControl: '3600',
+        upsert: false,
+      });
 
     if (error) throw error;
 
