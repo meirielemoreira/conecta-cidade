@@ -136,7 +136,7 @@ function normalizarTelefone(valor: string): string {
   return valor.replace(/\D/g, '');
 }
 
-function criarNomeArquivo(arquivo: File): string {
+function criarNomeArquivo(arquivo: File, userId: string): string {
   const extensaoOriginal = arquivo.name.split('.').pop()?.toLowerCase();
   const extensao = extensaoOriginal || 'jpg';
 
@@ -153,7 +153,7 @@ function criarNomeArquivo(arquivo: File): string {
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  return `direto-produtor/${Date.now()}-${identificador}-${nomeBase || 'imagem'}.${extensao}`;
+  return `${userId}/direto-produtor/${Date.now()}-${identificador}-${nomeBase || 'imagem'}.${extensao}`;
 }
 
 function extrairCaminhoStorage(url: string): string | null {
@@ -474,7 +474,17 @@ export default function DiretoProdutorAdmin() {
 
     setEnviandoImagem(true);
 
-    const caminho = criarNomeArquivo(arquivoImagem);
+    const {
+      data: { user },
+      error: erroUsuario,
+    } = await supabase.auth.getUser();
+
+    if (erroUsuario || !user) {
+      setEnviandoImagem(false);
+      throw new Error('Usuário não autenticado para enviar a imagem.');
+    }
+
+    const caminho = criarNomeArquivo(arquivoImagem, user.id);
 
     const { error: erroUpload } = await supabase.storage
       .from(BUCKET)
