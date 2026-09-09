@@ -33,20 +33,24 @@ export const metadata: Metadata = {
 
 export default function PlanosPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12">
-      <div className="mx-auto max-w-5xl px-5 md:px-6">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-6 md:py-12">
+      <div className="mx-auto max-w-5xl px-3 sm:px-4 md:px-6">
 
         {/* Título Principal */}
-        <section className="mb-12 text-center">
-          <span className="mb-4 inline-flex rounded-full bg-orange-100 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-orange-700">
+        <section className="mb-6 text-center md:mb-12">
+          <span className="mb-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-orange-700 md:mb-4 md:px-4 md:py-1.5 md:text-xs">
             Planos Conecta Cidade
           </span>
 
-          <h1 className="mb-4 text-4xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+          <h1 className="mb-2 text-3xl font-extrabold leading-tight text-slate-900 md:mb-4 md:text-5xl">
             Divulgue seu negócio em Nova União
           </h1>
 
-          <p className="mx-auto max-w-3xl text-base leading-relaxed text-slate-600 md:text-lg">
+          <p className="mx-auto max-w-3xl text-sm leading-relaxed text-slate-600 md:hidden">
+            Escolha o plano ideal e apareça para mais pessoas na sua cidade.
+          </p>
+
+          <p className="mx-auto hidden max-w-3xl text-base leading-relaxed text-slate-600 md:block md:text-lg">
             O Plano Gratuito é ótimo para testar e divulgar seu trabalho.
             Mas, se você quer vender mais e ter visibilidade na cidade,
             nossos planos pagos fazem toda a diferença.
@@ -54,114 +58,114 @@ export default function PlanosPage() {
         </section>
 
          {/* Primeira linha - 3 Cards */}
-        <div className="mb-16 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="mb-6 grid grid-cols-1 gap-3 md:mb-16 md:grid-cols-3 md:gap-6">
 
           {/* Plano Gratuito */}
-          <article className="h-full flex flex-col rounded-3xl border-2 border-yellow-400 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-yellow-100 text-3xl">📢</div>
-              <h3 className="text-2xl font-bold text-slate-900">Plano Gratuito</h3>
+          <article className="h-full flex flex-col rounded-2xl border-2 border-yellow-400 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-yellow-100 text-2xl md:text-3xl">📢</div>
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Plano Gratuito</h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-yellow-600">R$ 0,00</span>
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-yellow-600">R$ 0,00</span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">Anuncie sem custo!</p>
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Anuncie sem custo!</p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 anúncio</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>5 fotos</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>7 dias de divulgação</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Divulgação gratuita</li>
             </ul>
 
-            <Link href="/anunciar?plano=Gratuito" className="mt-auto block w-full rounded-xl bg-yellow-400 py-4 text-center font-bold text-black transition hover:scale-[1.02] hover:bg-yellow-500 active:scale-95">
+            <Link href="/anunciar?plano=Gratuito" className="mt-3 block w-full rounded-xl bg-yellow-400 py-2.5 md:mt-auto md:py-4 text-center font-bold text-black transition hover:scale-[1.02] hover:bg-yellow-500 active:scale-95">
               Começar agora
             </Link>
           </article>
 
           {/* Direto do Produtor */}
-          <article className="h-full relative flex flex-col rounded-3xl border-2 border-emerald-500 bg-emerald-50 p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-3 right-6 whitespace-nowrap rounded-full bg-emerald-600 px-4 py-1 text-xs font-bold text-white">ESPECIAL</div>
+          <article className="h-full relative flex flex-col rounded-2xl border-2 border-emerald-500 bg-emerald-50 p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">ESPECIAL</div>
 
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-3xl">🌱</div>
-              <h3 className="text-2xl font-bold text-slate-900">Direto do Produtor</h3>
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-emerald-100 text-2xl md:text-3xl">🌱</div>
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Direto do Produtor</h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-emerald-600">R$ 0,00</span>
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-emerald-600">R$ 0,00</span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">Você é produtor rural ou artesão?</p>
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Você é produtor rural ou artesão?</p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Divulgação por 30 dias</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 anúncio</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 foto</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Destaque na Home</li>
             </ul>
 
-            <Link href="/direto-do-produtor/participar" className="mt-auto block w-full rounded-xl bg-emerald-600 py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95">
+            <Link href="/direto-do-produtor/participar" className="mt-3 block w-full rounded-xl bg-emerald-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95">
               Quero participar
             </Link>
           </article>
 
           {/* Agenda Local */}
-          <article className="h-full relative flex flex-col rounded-3xl border-2 border-sky-500 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-3 right-6 whitespace-nowrap rounded-full bg-sky-600 px-4 py-1 text-xs font-bold text-white">SERVIÇOS</div>
+          <article className="h-full relative flex flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-sky-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">SERVIÇOS</div>
 
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-100 text-3xl">📍</div>
-              <h3 className="text-2xl font-bold text-slate-900">Agenda Local</h3>
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">📍</div>
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Agenda Local</h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-sky-600">R$ 19,90</span>
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">R$ 19,90</span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">Ideal para empresas e serviços.</p>
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Ideal para empresas e serviços.</p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>60 dias de divulgação</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 foto da empresa ou serviço</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>WhatsApp + Instagram</li>
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Destaque na Home</li>
             </ul>
 
-            <Link href="/agenda-local/cadastro" className="mt-auto block w-full rounded-xl bg-sky-600 py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95">
+            <Link href="/agenda-local/cadastro" className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95">
               Escolher plano →
             </Link>
           </article>
         </div>
 
         {/* Segunda linha - Planos Pagos */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
 
           {/* Impulso */}
-          <article className="flex h-full flex-col rounded-3xl border-2 border-red-500 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100 text-3xl">
+          <article className="flex h-full flex-col rounded-2xl border-2 border-red-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-red-100 text-2xl md:text-3xl">
                 🚀
               </div>
 
-              <h3 className="text-2xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
                 Impulso
               </h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-red-600">
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-red-600">
                 R$ 9,90
               </span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
               Mais visibilidade para vender rápido.
             </p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2">
                 <span className="font-bold text-emerald-600">✓</span>
                 1 anúncio
@@ -180,27 +184,27 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Impulso"
-              className="mt-6 block w-full rounded-xl bg-red-600 py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-red-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-red-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-red-700 active:scale-95"
             >
               Escolher plano →
             </Link>
           </article>
 
           {/* Vitrine */}
-          <article className="relative flex h-full scale-[1.02] flex-col rounded-3xl border-2 border-amber-500 bg-white p-7 shadow-xl ring-4 ring-amber-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+          <article className="relative flex h-full flex-col rounded-2xl border-2 border-amber-500 bg-white p-4 md:scale-[1.02] md:rounded-3xl md:p-7 shadow-xl ring-4 ring-amber-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100 text-3xl">
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-amber-100 text-2xl md:text-3xl">
                 ⭐
               </div>
 
-              <h3 className="text-2xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
                 Vitrine
               </h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-amber-600">
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-amber-600">
                 R$ 19,90
               </span>
 
@@ -209,11 +213,11 @@ export default function PlanosPage() {
               </span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
               Maior visibilidade e vendas rápidas.
             </p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2">
                 <span className="font-bold text-emerald-600">✓</span>
                 WhatsApp + Instagram
@@ -232,30 +236,30 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Vitrine"
-              className="mt-6 block w-full rounded-xl bg-amber-600 py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-amber-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-amber-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-amber-700 active:scale-95"
             >
               Escolher plano →
             </Link>
           </article>
 
           {/* Exclusivo */}
-          <article className="relative flex h-full flex-col rounded-3xl border-2 border-emerald-500 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-3 right-6 whitespace-nowrap rounded-full bg-emerald-600 px-4 py-1 text-xs font-bold text-white">
+          <article className="relative flex h-full flex-col rounded-2xl border-2 border-emerald-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
               DESTAQUE
             </div>
 
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-3xl">
+            <div className="mb-2 flex items-center gap-3 md:mb-4">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-emerald-100 text-2xl md:text-3xl">
                 👑
               </div>
 
-              <h3 className="text-2xl font-bold text-slate-900">
+              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
                 Exclusivo
               </h3>
             </div>
 
-            <div className="mb-4 flex items-end gap-2">
-              <span className="text-3xl font-extrabold text-emerald-600">
+            <div className="mb-2 flex items-end gap-2 md:mb-4">
+              <span className="text-2xl font-extrabold md:text-3xl text-emerald-600">
                 R$ 29,90
               </span>
 
@@ -264,11 +268,11 @@ export default function PlanosPage() {
               </span>
             </div>
 
-            <p className="mb-6 text-sm leading-relaxed text-slate-600">
+            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
               Máxima visibilidade com destaque fixo e repost no Instagram.
             </p>
 
-            <ul className="mb-auto space-y-2 text-sm text-slate-700">
+            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
               <li className="flex items-start gap-2">
                 <span className="font-bold text-emerald-600">✓</span>
                 Destaque fixo
@@ -292,15 +296,20 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Exclusivo"
-              className="mt-6 block w-full rounded-xl bg-emerald-600 py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-emerald-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95"
             >
               Escolher plano →
             </Link>
           </article>
         </div>
 
-        {/* Tabela Comparativa */}
-        <section className="mb-16 mt-16">
+        <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-xs font-semibold text-emerald-800 md:hidden">
+          <span aria-hidden="true">🛡️</span>
+          Escolha com tranquilidade. Você acompanha seus anúncios pela Minha Conta.
+        </div>
+
+        {/* Tabela Comparativa - mantida no computador, ocultada no celular para reduzir rolagem */}
+        <section className="mb-16 mt-16 hidden md:block">
           <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
             Compare os Planos
           </h2>
