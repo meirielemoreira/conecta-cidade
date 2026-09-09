@@ -6,11 +6,11 @@ export default function AnuncioCard({ anuncio }: { anuncio: any }) {
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow hover:shadow-2xl transition-all group">
       {anuncio.imagens && anuncio.imagens.length > 0 && (
-        <div className="relative h-64">
+        <div className="relative h-64 bg-gray-100">
           <img 
             src={anuncio.imagens[0]} 
             alt={anuncio.titulo}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain md:object-cover group-hover:scale-105 transition-transform duration-300"
           />
           <div className="absolute top-4 right-4 bg-white/90 px-4 py-1 rounded-2xl text-sm font-medium">
             {anuncio.plano_usado === 'gratuito' ? 'Teste Grátis' : 'Destaque'}
