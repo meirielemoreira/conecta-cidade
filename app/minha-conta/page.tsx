@@ -312,28 +312,27 @@ const linkAgenda =
     : '/minha-conta/agenda';
 
 return (
-  <main className="min-h-screen bg-slate-50 px-4 py-10">
-    <div className="mx-auto max-w-6xl space-y-7">
+  <main className="min-h-screen bg-slate-50 px-3 py-5 md:px-4 md:py-10">
+    <div className="mx-auto max-w-6xl space-y-5 md:space-y-7">
         {/* APRESENTAÇÃO */}
-        <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-sm md:p-9">
-          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-center">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:rounded-3xl md:p-9">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center lg:gap-6">
             <div>
               <p className="text-sm font-bold uppercase tracking-wider text-orange-600">
                 Minha conta
               </p>
 
-              <h1 className="mt-2 text-3xl font-bold text-slate-900 md:text-4xl">
+              <h1 className="mt-2 text-2xl font-bold text-slate-900 md:text-4xl">
                 Olá, {nomeUsuario}
               </h1>
 
-              <p className="mt-2 text-slate-600">
-                Acompanhe seus anúncios,
-                cadastros, planos e oportunidades
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 md:text-base">
+                Escolha abaixo o que você deseja fazer
                 no Conecta Cidade.
               </p>
             </div>
 
-            <div className="min-w-[260px] rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <div className="hidden min-w-[260px] rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 md:block">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Conta conectada
               </p>
@@ -385,8 +384,63 @@ return (
     da sua Agenda Local.
   </section>
 )}
+
+        {/* AÇÕES PRINCIPAIS - MOBILE */}
+        <section className="md:hidden">
+          <div className="mb-3">
+            <h2 className="text-xl font-bold text-slate-900">
+              O que você deseja fazer?
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Escolha uma opção para continuar.
+            </p>
+          </div>
+
+          <div className="grid gap-3">
+            <AcaoMobileCard
+              destaque
+              icone="📢"
+              titulo="Criar anúncio"
+              descricao="Divulgue produtos, imóveis, veículos, promoções ou serviços no portal."
+              href="/anunciar"
+              textoAcao="Criar anúncio"
+            />
+
+            <AcaoMobileCard
+              icone="📍"
+              titulo="Agenda Local"
+              descricao="Divulgue sua empresa, profissão ou serviço para quem procura na cidade."
+              href={
+                agenda
+                  ? '/agenda-local'
+                  : '/agenda-local/cadastro'
+              }
+              textoAcao={
+                agenda
+                  ? 'Ver minha Agenda Local'
+                  : 'Cadastrar na Agenda'
+              }
+            />
+
+            <AcaoMobileCard
+              icone="🌱"
+              titulo="Direto do Produtor"
+              descricao="Para produtores rurais, agricultores familiares, artesãos e produtores locais."
+              href="/direto-do-produtor/participar"
+              textoAcao="Participar gratuitamente"
+            />
+
+            <AcaoMobileCard
+              icone="📅"
+              titulo="Planos e renovações"
+              descricao="Consulte seus planos, vencimentos e opções de divulgação."
+              href="/minha-conta/pagamentos"
+              textoAcao="Ver meus planos"
+            />
+          </div>
+        </section>
         {/* CARDS PRINCIPAIS */}
-        <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
           <CardConta
             cor="orange"
             icone="📢"
@@ -427,7 +481,7 @@ return (
             titulo="Direto do Produtor"
             descricao="Programa direcionado a produtores rurais, agricultores familiares, artesãos e produtores de alimentos da região."
             href="/direto-do-produtor/participar"
-            textoBotao="Quero participar"
+            textoBotao="Participar gratuitamente"
             hrefSecundario="/direto-do-produtor"
             textoBotaoSecundario="Conhecer o programa"
           />
@@ -445,43 +499,80 @@ return (
 
         {/* RESUMO DOS ANÚNCIOS */}
         {resumo.total > 0 && (
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Resumo
-              titulo="Aprovados"
-              valor={resumo.aprovados}
-              descricao="Publicados ou liberados"
-              classe="border-emerald-200 bg-emerald-50 text-emerald-700"
-            />
+          <>
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:hidden">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-bold text-slate-900">
+                    Meus anúncios
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {resumo.total} anúncio(s) cadastrado(s)
+                  </p>
+                </div>
 
-            <Resumo
-              titulo="Em análise"
-              valor={resumo.pendentes}
-              descricao="Aguardando aprovação"
-              classe="border-amber-200 bg-amber-50 text-amber-800"
-            />
+                <Link
+                  href="/minha-conta/anuncios"
+                  className="shrink-0 text-sm font-semibold text-orange-700"
+                >
+                  Gerenciar
+                </Link>
+              </div>
 
-            <Resumo
-              titulo="Expirando"
-              valor={resumo.expirando}
-              descricao="Vencem em até 7 dias"
-              classe="border-orange-200 bg-orange-50 text-orange-700"
-            />
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-emerald-700">
+                  {resumo.aprovados} publicados
+                </span>
+                <span className="rounded-full bg-amber-50 px-3 py-1.5 text-amber-800">
+                  {resumo.pendentes} em análise
+                </span>
+                <span className="rounded-full bg-orange-50 px-3 py-1.5 text-orange-700">
+                  {resumo.expirando} expirando
+                </span>
+                <span className="rounded-full bg-red-50 px-3 py-1.5 text-red-700">
+                  {resumo.expirados} expirados
+                </span>
+              </div>
+            </section>
 
-            <Resumo
-              titulo="Expirados"
-              valor={resumo.expirados}
-              descricao="Precisam de renovação"
-              classe="border-red-200 bg-red-50 text-red-700"
-            />
-          </section>
+            <section className="hidden gap-4 sm:grid-cols-2 md:grid lg:grid-cols-4">
+              <Resumo
+                titulo="Aprovados"
+                valor={resumo.aprovados}
+                descricao="Publicados ou liberados"
+                classe="border-emerald-200 bg-emerald-50 text-emerald-700"
+              />
+
+              <Resumo
+                titulo="Em análise"
+                valor={resumo.pendentes}
+                descricao="Aguardando aprovação"
+                classe="border-amber-200 bg-amber-50 text-amber-800"
+              />
+
+              <Resumo
+                titulo="Expirando"
+                valor={resumo.expirando}
+                descricao="Vencem em até 7 dias"
+                classe="border-orange-200 bg-orange-50 text-orange-700"
+              />
+
+              <Resumo
+                titulo="Expirados"
+                valor={resumo.expirados}
+                descricao="Precisam de renovação"
+                classe="border-red-200 bg-red-50 text-red-700"
+              />
+            </section>
+          </>
         )}
 
         {/* DADOS E AÇÕES */}
         <section className="grid gap-5 lg:grid-cols-3">
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
+          <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:rounded-3xl md:p-8 lg:col-span-2">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">
+                <h2 className="text-xl font-bold text-slate-900 md:text-2xl">
                   Seus dados
                 </h2>
 
@@ -499,7 +590,7 @@ return (
               </Link>
             </div>
 
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 md:mt-6 md:gap-5">
               <InfoPerfil
                 titulo="Nome"
                 valor={nomeUsuario}
@@ -533,7 +624,7 @@ return (
             </div>
           </article>
 
-          <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <article className="hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:block">
             <h2 className="text-xl font-bold text-slate-900">
               Ações rápidas
             </h2>
@@ -568,7 +659,7 @@ return (
                 href="/direto-do-produtor/participar"
                 className="block w-full rounded-xl bg-emerald-600 px-5 py-3 text-center font-semibold text-white transition hover:bg-emerald-700"
               >
-                Participar como produtor
+                Participar gratuitamente
               </Link>
 
               <Link
@@ -591,7 +682,7 @@ return (
         </section>
 
         {/* SEGURANÇA */}
-        <section className="flex flex-col justify-between gap-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:p-8">
+        <section className="flex flex-col justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center md:rounded-3xl md:p-8">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
               Segurança da conta
@@ -617,6 +708,69 @@ return (
         </section>
       </div>
     </main>
+  );
+}
+
+
+function AcaoMobileCard({
+  titulo,
+  descricao,
+  href,
+  textoAcao,
+  icone,
+  destaque = false,
+}: {
+  titulo: string;
+  descricao: string;
+  href: string;
+  textoAcao: string;
+  icone: string;
+  destaque?: boolean;
+}) {
+  return (
+    <article
+      className={
+        destaque
+          ? 'rounded-2xl border border-orange-200 bg-orange-50 p-4 shadow-sm'
+          : 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm'
+      }
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={
+            destaque
+              ? 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-lg'
+              : 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-lg'
+          }
+        >
+          {icone}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-slate-900">
+            {titulo}
+          </h3>
+
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            {descricao}
+          </p>
+
+          <Link
+            href={href}
+            className={
+              destaque
+                ? 'mt-3 inline-flex font-semibold text-orange-700'
+                : 'mt-3 inline-flex font-semibold text-slate-800'
+            }
+          >
+            {textoAcao}
+            <span aria-hidden="true" className="ml-1">
+              →
+            </span>
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -780,7 +934,7 @@ function InfoPerfil({
   valor: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 md:rounded-2xl md:p-4">
       <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
         {titulo}
       </p>
