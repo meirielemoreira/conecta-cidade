@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import {
   Suspense,
   useEffect,
@@ -1219,13 +1221,13 @@ function AnunciarConteudo() {
     <main className="min-h-screen bg-slate-100 pb-20 font-sans text-slate-800">
       {/* HERO */}
 
-      <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 py-8 text-white shadow-md md:py-10">
+      <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 py-4 text-white shadow-md md:py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 text-center">
-          <h1 className="mx-auto w-full max-w-6xl text-center text-3xl font-extrabold uppercase leading-tight tracking-tight md:text-5xl">
+          <h1 className="mx-auto w-full max-w-6xl text-center text-2xl font-extrabold uppercase leading-tight tracking-tight md:text-5xl">
             Impulsione seu negócio em Nova União!
           </h1>
 
-          <p className="mx-auto mt-2 w-full max-w-4xl text-center text-sm font-medium uppercase tracking-wide text-slate-300 md:text-base">
+          <p className="mx-auto mt-1.5 w-full max-w-4xl text-center text-[11px] font-medium uppercase leading-relaxed tracking-wide text-slate-300 md:mt-2 md:text-base">
             Alcance toda a cidade e região com nosso portal de serviços e produtos.
           </p>
         </div>
@@ -1233,12 +1235,12 @@ function AnunciarConteudo() {
 
       {/* TRÊS COLUNAS */}
 
-      <div className="mx-auto max-w-[1500px] px-4 py-10 md:px-6">
+      <div className="mx-auto max-w-[1500px] px-3 py-5 md:px-6 md:py-10">
         <div className="grid items-start gap-7 lg:grid-cols-12">
           {/* CARD FORMULÁRIO */}
 
           <section className="lg:col-span-5">
-            <div className="rounded-2xl border border-sky-300 bg-white p-5 shadow-lg md:p-7">
+            <div className="rounded-2xl border border-sky-300 bg-white p-4 shadow-lg md:p-7">
               <FaixaCard
                 texto="Reserve seu espaço publicitário agora!"
                 classe="bg-sky-700"
@@ -1247,6 +1249,15 @@ function AnunciarConteudo() {
               <p className="mt-3 text-center text-sm font-medium text-slate-700">
                 Escolha abaixo o que mais se encaixa com seu negócio.
               </p>
+
+              <div className="mt-2 text-center">
+                <Link
+                  href="/planos"
+                  className="text-xs font-bold text-sky-700 underline-offset-4 hover:underline md:text-sm"
+                >
+                  Compare os planos e benefícios →
+                </Link>
+              </div>
 
               {/* CONTA */}
 
@@ -1290,7 +1301,7 @@ function AnunciarConteudo() {
                   Escolha um plano
                 </h2>
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
                   {planos.map(
                     (plano) => {
                       const selecionado =
@@ -1356,7 +1367,7 @@ function AnunciarConteudo() {
                           aria-pressed={
                             selecionado
                           }
-                          className={`relative flex min-h-[190px] flex-col justify-between rounded-xl border-2 p-3 text-left transition-all ${
+                          className={`relative flex min-h-[145px] flex-col justify-between rounded-xl border-2 p-2.5 text-left transition-all sm:min-h-[165px] sm:p-3 xl:min-h-[190px] ${
                             plano.borderClass
                           } ${
                             selecionado
@@ -1365,27 +1376,27 @@ function AnunciarConteudo() {
                           }`}
                         >
                           <div>
-                            <h3 className="text-base font-extrabold text-slate-900">
+                            <h3 className="text-sm font-extrabold text-slate-900 sm:text-base">
                               {plano.nome}
                             </h3>
 
                             <p
-                              className={`mt-1 text-xl font-black ${plano.priceClass}`}
+                              className={`mt-1 text-base font-black leading-tight sm:text-xl ${plano.priceClass}`}
                             >
                               {plano.preco}
                             </p>
 
-                            <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate-600">
+                            <p className="mt-1.5 text-[10px] font-medium leading-snug text-slate-600 sm:mt-2 sm:text-[11px] sm:leading-relaxed">
                               {plano.descricao}
                             </p>
 
-                            <p className="mt-2 text-[10px] text-slate-500">
+                            <p className="mt-1 text-[9px] leading-snug text-slate-500 sm:mt-2 sm:text-[10px]">
                               {plano.observacao}
                             </p>
                           </div>
 
                           <span
-                            className={`mt-3 block w-full rounded-md border py-1.5 text-center text-[10px] font-bold uppercase ${
+                            className={`mt-2 block w-full rounded-md border px-1 py-1.5 text-center text-[9px] font-bold uppercase sm:mt-3 sm:text-[10px] ${
                               selecionado
                                 ? 'border-sky-700 bg-sky-700 text-white'
                                 : plano.buttonClass
@@ -1744,69 +1755,45 @@ function AnunciarConteudo() {
           {/* CARD AGENDA LOCAL */}
 
           <section className="lg:col-span-4">
-            <div className="rounded-2xl border border-orange-300 bg-white p-6 shadow-lg">
+            <div className="rounded-2xl border border-orange-300 bg-white p-4 shadow-lg md:p-6">
               <FaixaCard
                 texto="Faça parte do nosso guia de profissionais!"
                 classe="bg-orange-600"
               />
 
-              <h2 className="mt-6 text-center text-2xl font-black uppercase leading-tight text-slate-900">
-                Você presta serviços em Nova União?
+              <h2 className="mt-5 text-center text-xl font-black uppercase leading-tight text-slate-900 md:mt-6 md:text-2xl">
+                Agenda Local
               </h2>
 
+              <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-center">
+                <p className="text-xl font-black text-orange-700">
+                  R$ 19,90
+                </p>
+                <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-slate-700">
+                  60 dias de divulgação
+                </p>
+              </div>
+
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Cadastre sua empresa ou profissão no maior catálogo de telefones úteis, empresas e serviços de Nova União.
+                Divulgue sua empresa, profissão ou serviço para moradores da cidade encontrarem seu contato com facilidade.
               </p>
 
-              <p className="mt-3 text-sm font-semibold text-slate-700">
-                Encontre profissionais e serviços como:
+              <p className="mt-4 text-sm font-bold text-slate-900">
+                Alguns profissionais e serviços que podem participar:
               </p>
 
-              <div className="mt-4 space-y-3 text-sm leading-relaxed text-slate-700">
-                <CategoriaServico
-                  titulo="🏥 Saúde e utilidade pública"
-                  descricao="Postos de saúde, farmácias, emergências, clínicas e hospitais."
-                />
-
-                <CategoriaServico
-                  titulo="👨‍⚕️ Profissionais da saúde"
-                  descricao="Médicos, dentistas, nutricionistas, psicólogos, fisioterapeutas e médicos ocupacionais."
-                />
-
-                <CategoriaServico
-                  titulo="💅 Beleza e bem-estar"
-                  descricao="Esteticistas, manicures, cabeleireiros e barbearias."
-                />
-
-                <CategoriaServico
-                  titulo="🛠️ Construção e manutenção"
-                  descricao="Pedreiros, marceneiros, eletricistas, encanadores, pintores e técnicos em refrigeração."
-                />
-
-                <CategoriaServico
-                  titulo="🚗 Automotivo"
-                  descricao="Mecânicos, borracharias e autoelétricas."
-                />
-
-                <CategoriaServico
-                  titulo="💼 Profissionais e empresas"
-                  descricao="Advogados, engenheiros, contadores, arquitetos, empresas e prestadores de serviços."
-                />
-
-                <p className="italic text-slate-500">
-                  ...e muitos outros.
-                </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 md:grid-cols-1 md:text-sm xl:grid-cols-2">
+                <CategoriaServicoSimples titulo="Saúde e utilidade pública" />
+                <CategoriaServicoSimples titulo="Profissionais da saúde" />
+                <CategoriaServicoSimples titulo="Beleza e bem-estar" />
+                <CategoriaServicoSimples titulo="Construção e manutenção" />
+                <CategoriaServicoSimples titulo="Automotivo" />
+                <CategoriaServicoSimples titulo="Profissionais e empresas" />
               </div>
 
-              <div className="mt-5 rounded-xl border border-orange-200 bg-orange-50 p-4">
-                <p className="text-sm font-bold text-slate-900">
-                  Seu contato ficará disponível para moradores encontrarem seu serviço com facilidade.
-                </p>
-
-                <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                  A Agenda Local organiza empresas, profissionais e telefones úteis em um catálogo de serviços da região.
-                </p>
-              </div>
+              <p className="mt-3 text-xs italic text-slate-500">
+                E outros serviços e profissionais da região.
+              </p>
 
               <button
                 type="button"
@@ -1815,9 +1802,9 @@ function AnunciarConteudo() {
                     '/agenda-local/cadastro'
                   )
                 }
-                className="mt-6 w-full rounded-xl bg-orange-600 px-5 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700"
+                className="mt-5 w-full rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700 md:mt-6 md:py-4"
               >
-                Cadastrar na Agenda Local →
+                Cadastrar na Agenda — R$ 19,90
               </button>
             </div>
           </section>
@@ -1825,32 +1812,34 @@ function AnunciarConteudo() {
           {/* CARD DIRETO DO PRODUTOR */}
 
           <section className="lg:col-span-3">
-            <div className="rounded-2xl border border-emerald-300 bg-white p-6 shadow-lg">
+            <div className="rounded-2xl border border-emerald-300 bg-white p-4 shadow-lg md:p-6">
               <FaixaCard
                 texto="Programa Direto do Produtor"
                 classe="bg-emerald-600"
               />
 
-              <h2 className="mt-6 text-center text-2xl font-black leading-tight text-slate-900">
+              <h2 className="mt-5 text-center text-xl font-black leading-tight text-slate-900 md:mt-6 md:text-2xl">
                 Divulgue gratuitamente sua produção local!
               </h2>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                O Conecta Cidade reserva este espaço para divulgar gratuitamente pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos de Nova União e região.
-              </p>
+              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
+                <p className="text-xl font-black text-emerald-700">
+                  GRATUITO
+                </p>
+                <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-slate-700">
+                  Divulgação por até 30 dias
+                </p>
+              </div>
 
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Nosso objetivo é fortalecer a economia local, incentivar a produção regional e aproximar quem produz de quem compra.
+                Espaço destinado a pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos de Nova União e região.
               </p>
 
-              <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                <ul className="space-y-3 text-sm font-medium text-slate-800">
-                  <ItemProdutor texto="Divulgação gratuita por até 30 dias" />
-
+              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                <ul className="space-y-2 text-sm font-medium text-slate-800">
                   <ItemProdutor texto="Vagas limitadas" />
-
                   <ItemProdutor texto="Seleção realizada pela administração" />
-
+                  <ItemProdutor texto="Rotatividade para dar oportunidade a novos produtores" />
                   <ItemProdutor texto="Lista de espera quando as vagas estiverem preenchidas" />
                 </ul>
               </div>
@@ -1862,9 +1851,9 @@ function AnunciarConteudo() {
                     '/direto-do-produtor/participar'
                   )
                 }
-                className="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-4 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-emerald-700"
+                className="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-emerald-700 md:mt-6 md:py-4"
               >
-                Quero participar
+                Participar gratuitamente
               </button>
 
               <button
@@ -1967,21 +1956,15 @@ function Campo({
   );
 }
 
-function CategoriaServico({
+function CategoriaServicoSimples({
   titulo,
-  descricao,
 }: {
   titulo: string;
-  descricao: string;
 }) {
   return (
-    <div>
-      <p className="font-bold text-slate-900">
+    <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <p className="leading-snug text-slate-800">
         {titulo}
-      </p>
-
-      <p className="text-slate-600">
-        {descricao}
       </p>
     </div>
   );
