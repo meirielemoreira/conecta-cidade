@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 import Header from "../components/Header";
@@ -41,6 +41,19 @@ export const metadata: Metadata = {
 
   category: "Portal local",
 
+  manifest: "/manifest.webmanifest",
+
+  icons: {
+    icon: "/icon.png.png",
+    apple: "/icon.png.png",
+  },
+
+  appleWebApp: {
+    capable: true,
+    title: "Conecta Cidade",
+    statusBarStyle: "default",
+  },
+
   robots: {
     index: true,
     follow: true,
@@ -74,6 +87,10 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ff6600",
 };
 
 export default function RootLayout({
