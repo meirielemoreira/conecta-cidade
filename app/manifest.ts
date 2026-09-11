@@ -13,7 +13,7 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     icons: [
       {
-        src: "/icon.png.png",
+        src: "/conecta-cidade-app.png",
         sizes: "1254x1254",
         type: "image/png",
         purpose: "any",
