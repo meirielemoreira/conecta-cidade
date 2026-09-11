@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const TELEFONE_CONECTA = '31984949887';
 const TELEFONE_CONECTA_EXIBICAO = '(31) 98494-9887';
-const INSTAGRAM_CONECTA = 'https://instagram.com/conecta.novauniao';
+const INSTAGRAM_CONECTA = 'https://instagram.com/portal.conectacidade';
 
 export default function Footer() {
   const anoAtual = new Date().getFullYear();
@@ -19,9 +19,11 @@ export default function Footer() {
               className="inline-flex items-center gap-3"
               aria-label="Ir para a página inicial"
             >
-              <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-black text-lg shadow-md">
-                CN
-              </div>
+              <img
+  src="/conecta-cidade-app.png"
+  alt="Conecta Cidade"
+  className="w-12 h-12 rounded-2xl object-cover shadow-md"
+/>
 
               <div>
                 <p className="text-xl font-extrabold text-slate-900 leading-tight">
@@ -168,7 +170,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-pink-600 transition mt-4"
             >
               <InstagramIcon className="w-4 h-4" />
-              @conecta.novauniao
+             @portal.conectacidade
             </a>
           </div>
         </div>

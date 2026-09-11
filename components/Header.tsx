@@ -60,9 +60,11 @@ export default function Header() {
             className="flex items-center gap-3 shrink-0"
             aria-label="Ir para a página inicial"
           >
-            <div className="w-11 h-11 md:w-12 md:h-12 bg-[#FF6B00] rounded-2xl flex items-center justify-center text-white font-black text-lg md:text-xl shadow-md">
-              CN
-            </div>
+           <img
+  src="/conecta-cidade-app.png"
+  alt="Conecta Cidade"
+  className="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-cover shadow-md"
+/>
 
             <div>
               <p className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">
