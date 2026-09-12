@@ -12,11 +12,17 @@ interface BeforeInstallPromptEvent extends Event {
 
 export default function InstallAppPrompt() {
   const [visivel, setVisivel] = useState(false);
+
   const [eventoInstalacao, setEventoInstalacao] =
     useState<BeforeInstallPromptEvent | null>(null);
 
   const [isIOS, setIsIOS] = useState(false);
-  const [mostrarInstrucaoIOS, setMostrarInstrucaoIOS] = useState(false);
+
+  const [mostrarInstrucaoIOS, setMostrarInstrucaoIOS] =
+    useState(false);
+
+  const [mostrarInstrucaoAndroid, setMostrarInstrucaoAndroid] =
+    useState(false);
 
   useEffect(() => {
     const navegador = window.navigator as Navigator & {
@@ -34,7 +40,9 @@ export default function InstallAppPrompt() {
 
     setVisivel(true);
 
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const ios = /iphone|ipad|ipod/i.test(
+      window.navigator.userAgent
+    );
 
     setIsIOS(ios);
 
@@ -44,37 +52,79 @@ export default function InstallAppPrompt() {
       const evento = event as BeforeInstallPromptEvent;
 
       setEventoInstalacao(evento);
+      setMostrarInstrucaoAndroid(false);
       setVisivel(true);
     };
 
     const aoInstalar = () => {
       setEventoInstalacao(null);
+      setMostrarInstrucaoAndroid(false);
+      setMostrarInstrucaoIOS(false);
       setVisivel(false);
     };
 
-    window.addEventListener('beforeinstallprompt', aoPoderInstalar);
-    window.addEventListener('appinstalled', aoInstalar);
+    window.addEventListener(
+      'beforeinstallprompt',
+      aoPoderInstalar
+    );
+
+    window.addEventListener(
+      'appinstalled',
+      aoInstalar
+    );
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then(() => {
+          console.log(
+            'Service Worker do Conecta Cidade registrado.'
+          );
+        })
+        .catch((error) => {
+          console.error(
+            'Erro ao registrar Service Worker:',
+            error
+          );
+        });
+    }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', aoPoderInstalar);
-      window.removeEventListener('appinstalled', aoInstalar);
+      window.removeEventListener(
+        'beforeinstallprompt',
+        aoPoderInstalar
+      );
+
+      window.removeEventListener(
+        'appinstalled',
+        aoInstalar
+      );
     };
   }, []);
 
   const instalarAplicativo = async () => {
     if (eventoInstalacao) {
       await eventoInstalacao.prompt();
-      await eventoInstalacao.userChoice;
+
+      const escolha = await eventoInstalacao.userChoice;
 
       setEventoInstalacao(null);
-      setVisivel(false);
+
+      if (escolha.outcome === 'accepted') {
+        setVisivel(false);
+      }
 
       return;
     }
 
     if (isIOS) {
       setMostrarInstrucaoIOS(true);
+      setMostrarInstrucaoAndroid(false);
+      return;
     }
+
+    setMostrarInstrucaoAndroid(true);
+    setMostrarInstrucaoIOS(false);
   };
 
   if (!visivel) {
@@ -133,8 +183,16 @@ export default function InstallAppPrompt() {
           </button>
         </div>
 
+        {mostrarInstrucaoAndroid && (
+          <div className="mx-3 mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 sm:mx-4 sm:text-sm">
+            No Chrome, toque no menu <strong>⋮</strong> e escolha{' '}
+            <strong>Instalar aplicativo</strong> ou{' '}
+            <strong>Adicionar à tela inicial</strong>.
+          </div>
+        )}
+
         {mostrarInstrucaoIOS && (
-          <div className="mx-3 mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700 sm:mx-4 sm:text-sm">
+          <div className="mx-3 mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 sm:mx-4 sm:text-sm">
             No iPhone, toque em <strong>Compartilhar</strong> no Safari e
             depois em <strong>Adicionar à Tela de Início</strong>.
           </div>
