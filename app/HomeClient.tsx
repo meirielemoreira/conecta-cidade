@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
+import InstallAppPrompt from '../components/InstallAppPrompt';
 
 type Anuncio = {
   id: string;
@@ -346,13 +347,15 @@ export default function Home() {
 
   <div className="absolute inset-0 bg-black/55" />
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center text-white">
+          <InstallAppPrompt />
+
           <div className="inline-flex items-center bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-4">
             <span className="text-xs sm:text-sm font-medium">
               Portal Comercial e Informativo
             </span>
           </div>
 
-          <h1 className="max-w-5xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
+          <h1 className="max-w-6xl mx-auto text-4xl sm:text-5xl lg:text-5xl xl:text-[54px] font-extrabold leading-[1.05] tracking-tight">
             Tudo de
             <span className="text-orange-400"> Nova União </span>
             em um só lugar
