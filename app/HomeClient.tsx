@@ -333,7 +333,7 @@ export default function Home() {
 
   return (
     <main className="bg-white">
-      {/* HERO COMPACTO */}
+{/* HERO COMPACTO */}
 <section className="relative overflow-hidden min-h-[420px] sm:min-h-[440px] lg:min-h-[460px] flex items-center">
 
   <Image
@@ -346,64 +346,65 @@ export default function Home() {
   />
 
   <div className="absolute inset-0 bg-black/55" />
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center text-white">
-          <InstallAppPrompt />
 
-          <div className="inline-flex items-center bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-4">
-            <span className="text-xs sm:text-sm font-medium">
-              Portal Comercial e Informativo
-            </span>
-          </div>
+  <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center text-white">
+    <InstallAppPrompt />
 
-          <h1 className="max-w-6xl mx-auto text-4xl sm:text-5xl lg:text-5xl xl:text-[54px] font-extrabold leading-[1.05] tracking-tight">
-            Tudo de
-            <span className="text-orange-400"> Nova União </span>
-            em um só lugar
-          </h1>
+    <div className="inline-flex items-center bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-5">
+      <span className="text-xs sm:text-sm font-medium">
+        Portal Comercial e Informativo
+      </span>
+    </div>
 
-          <p className="max-w-3xl mx-auto text-base sm:text-lg lg:text-xl text-white/90 mt-4">
-            Empresas, promoções, serviços, profissionais, eventos e informações da cidade.
-          </p>
+    <h1 className="max-w-4xl mx-auto text-4xl sm:text-5xl lg:text-[52px] font-extrabold leading-tight tracking-tight">
+      Tudo de
+      <span className="text-orange-400"> Nova União </span>
+      em um só lugar
+    </h1>
 
-          <form
-            onSubmit={pesquisar}
-            className="max-w-3xl mx-auto mt-6"
-          >
-            <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-2 shadow-2xl">
-              <input
-                type="text"
-                value={termoBusca}
-                onChange={(event) => setTermoBusca(event.target.value)}
-                placeholder="O que você procura hoje?"
-                className="min-w-0 flex-1 h-12 sm:h-13 rounded-xl bg-white text-slate-800 px-4 sm:px-5 text-base focus:outline-none"
-              />
+    <p className="max-w-2xl mx-auto text-base sm:text-lg text-white/90 mt-4 leading-relaxed">
+      Anuncie e encontre imóveis, carros, serviços e promoções em Nova União.
+    </p>
 
-              <button
-                type="submit"
-                className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shrink-0"
-              >
-                Pesquisar
-              </button>
-            </div>
-          </form>
+    <form
+      onSubmit={pesquisar}
+      className="max-w-2xl mx-auto mt-7"
+    >
+      <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-2 shadow-2xl">
+        <input
+          type="text"
+          value={termoBusca}
+          onChange={(event) => setTermoBusca(event.target.value)}
+          placeholder="O que você procura hoje?"
+          className="min-w-0 flex-1 h-12 sm:h-13 rounded-xl bg-white text-slate-800 px-4 sm:px-5 text-base focus:outline-none"
+        />
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
-            <Link
-              href="/anunciar"
-              className="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition shadow-lg"
-            >
-              Anunciar Agora
-            </Link>
+        <button
+          type="submit"
+          className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shrink-0"
+        >
+          Pesquisar
+        </button>
+      </div>
+    </form>
 
-            <Link
-              href="/planos"
-              className="inline-flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/40 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition"
-            >
-              Ver Planos
-            </Link>
-          </div>
-        </div>
-      </section>
+    <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
+      <Link
+        href="/anunciar"
+        className="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition shadow-lg"
+      >
+        Anunciar Grátis
+      </Link>
+
+      <Link
+        href="/planos"
+        className="inline-flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/40 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition"
+      >
+        Ver Planos
+      </Link>
+    </div>
+  </div>
+</section>
 
       {/* NOVIDADES */}
       <section className="max-w-7xl mx-auto px-6 py-16">

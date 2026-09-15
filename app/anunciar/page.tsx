@@ -166,6 +166,11 @@ function AnunciarConteudo() {
   ] = useState(true);
 
   const [
+    precisaLogin,
+    setPrecisaLogin,
+  ] = useState(false);
+
+  const [
     planoSelecionado,
     setPlanoSelecionado,
   ] = useState('Gratuito');
@@ -220,12 +225,12 @@ function AnunciarConteudo() {
       observacao:
         'Ideal para começar',
       fotosMax: 5,
-      borderClass:
-        'border-slate-300',
-      priceClass:
-        'text-slate-800',
-      buttonClass:
-        'border-slate-400 text-slate-700',
+ borderClass:
+  'border-orange-500',
+priceClass:
+  'text-orange-600',
+buttonClass:
+  'border-orange-500 text-orange-700',
       showInstagram: false,
     },
     {
@@ -253,11 +258,11 @@ function AnunciarConteudo() {
         'Exposição contínua',
       fotosMax: 8,
       borderClass:
-        'border-amber-400',
+        'border-orange-500',
       priceClass:
-        'text-amber-700',
+        'text-orange-600',
       buttonClass:
-        'border-amber-500 text-amber-700',
+        'border-orange-500 text-orange-700',
       showInstagram: true,
     },
     {
@@ -269,11 +274,11 @@ function AnunciarConteudo() {
         'Máximo alcance',
       fotosMax: 10,
       borderClass:
-        'border-emerald-500',
+        'border-orange-500',
       priceClass:
-        'text-emerald-700',
+        'text-orange-600',
       buttonClass:
-        'border-emerald-500 text-emerald-700',
+        'border-orange-500 text-orange-700',
       showInstagram: true,
     },
   ];
@@ -301,36 +306,17 @@ function AnunciarConteudo() {
         } = await supabase.auth.getUser();
 
         if (userError || !user) {
-          const planoUrl =
-            searchParams.get('plano');
-
-          const categoriaUrl =
-            searchParams.get('categoria');
-
-          const parametros = new URLSearchParams();
-
-          if (planoUrl) {
-            parametros.set('plano', planoUrl);
+          if (componenteAtivo) {
+            setUsuario(null);
+            setProfile(null);
+            setPrecisaLogin(true);
           }
-
-          if (categoriaUrl) {
-            parametros.set(
-              'categoria',
-              categoriaUrl
-            );
-          }
-
-          const destino = parametros.toString()
-            ? `/anunciar?${parametros.toString()}`
-            : '/anunciar';
-
-          router.replace(
-            `/login?redirect=${encodeURIComponent(
-              destino
-            )}`
-          );
 
           return;
+        }
+
+        if (componenteAtivo) {
+          setPrecisaLogin(false);
         }
 
         if (!componenteAtivo) {
@@ -1213,6 +1199,87 @@ function AnunciarConteudo() {
     return <CarregandoPagina />;
   }
 
+  if (precisaLogin) {
+    const planoUrl =
+      searchParams.get('plano');
+
+    const categoriaUrl =
+      searchParams.get('categoria');
+
+    const parametros = new URLSearchParams();
+
+    if (planoUrl) {
+      parametros.set('plano', planoUrl);
+    }
+
+    if (categoriaUrl) {
+      parametros.set(
+        'categoria',
+        categoriaUrl
+      );
+    }
+
+    const destino = parametros.toString()
+      ? `/anunciar?${parametros.toString()}`
+      : '/anunciar';
+
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10 text-slate-800">
+        <section className="w-full max-w-lg rounded-2xl border border-orange-200 bg-white p-6 text-center shadow-lg sm:p-8">
+          <div className="mx-auto inline-flex rounded-full bg-orange-100 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-orange-700">
+            Anúncio gratuito
+          </div>
+
+          <h1 className="mt-4 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
+            Anuncie grátis em Nova União
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
+            Divulgue seu produto, serviço, imóvel ou veículo de forma simples no Portal Conecta Cidade.
+          </p>
+
+          <div className="mt-6 grid gap-3 text-left">
+            <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
+              <p className="font-bold text-slate-900">
+                ✓ 7 dias grátis
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
+              <p className="font-bold text-slate-900">
+                ✓ Apareça para quem mora na cidade
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
+              <p className="font-bold text-slate-900">
+                ✓ Rápido e fácil
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/login?redirect=${encodeURIComponent(
+                  destino
+                )}`
+              )
+            }
+            className="mt-7 w-full rounded-xl bg-orange-600 px-5 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700"
+          >
+            Quero anunciar grátis
+          </button>
+
+          <p className="mt-4 text-xs leading-relaxed text-slate-500">
+            Ao continuar, você poderá entrar na sua conta ou criar seu cadastro.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   /* =======================================================
      INTERFACE
   ======================================================= */
@@ -1367,13 +1434,11 @@ function AnunciarConteudo() {
                           aria-pressed={
                             selecionado
                           }
-                          className={`relative flex min-h-[145px] flex-col justify-between rounded-xl border-2 p-2.5 text-left transition-all sm:min-h-[165px] sm:p-3 xl:min-h-[190px] ${
-                            plano.borderClass
-                          } ${
-                            selecionado
-                              ? 'bg-sky-50 ring-4 ring-sky-500/20'
-                              : 'bg-white hover:-translate-y-1 hover:shadow-md'
-                          }`}
+className={`relative flex min-h-[145px] flex-col justify-between rounded-xl border p-2.5 text-left transition-all sm:min-h-[165px] sm:p-3 xl:min-h-[190px] ${
+  selecionado
+    ? 'border-[3px] border-orange-500 bg-orange-50 ring-2 ring-orange-500/20 shadow-lg'
+    : 'border-slate-200 bg-white hover:border-orange-300 hover:-translate-y-1 hover:shadow-md'
+}`}
                         >
                           <div>
                             <h3 className="text-sm font-extrabold text-slate-900 sm:text-base">
@@ -1398,8 +1463,8 @@ function AnunciarConteudo() {
                           <span
                             className={`mt-2 block w-full rounded-md border px-1 py-1.5 text-center text-[9px] font-bold uppercase sm:mt-3 sm:text-[10px] ${
                               selecionado
-                                ? 'border-sky-700 bg-sky-700 text-white'
-                                : plano.buttonClass
+                                ? 'border-orange-600 bg-orange-600 text-white'
+                                : 'border-slate-200 bg-white text-slate-600'
                             }`}
                           >
                             {selecionado
