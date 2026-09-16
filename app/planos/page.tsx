@@ -61,14 +61,18 @@ export default function PlanosPage() {
         <div className="mb-6 grid grid-cols-1 gap-3 md:mb-16 md:grid-cols-3 md:gap-6">
 
           {/* Plano Gratuito */}
-          <article className="h-full flex flex-col rounded-2xl border-2 border-yellow-400 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <article className="relative h-full flex flex-col rounded-2xl border-2 border-orange-500 bg-orange-50 p-4 md:rounded-3xl md:p-7 shadow-lg ring-4 ring-orange-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-orange-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
+              COMECE POR AQUI
+            </div>
+
             <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-yellow-100 text-2xl md:text-3xl">📢</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-orange-100 text-2xl md:text-3xl">📢</div>
               <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Plano Gratuito</h3>
             </div>
 
             <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-yellow-600">R$ 0,00</span>
+              <span className="text-2xl font-extrabold md:text-3xl text-orange-600">R$ 0,00</span>
             </div>
 
             <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Anuncie sem custo!</p>
@@ -80,7 +84,7 @@ export default function PlanosPage() {
               <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Divulgação gratuita</li>
             </ul>
 
-            <Link href="/anunciar?plano=Gratuito" className="mt-3 block w-full rounded-xl bg-yellow-400 py-2.5 md:mt-auto md:py-4 text-center font-bold text-black transition hover:scale-[1.02] hover:bg-yellow-500 active:scale-95">
+            <Link href="/anunciar?plano=Gratuito" className="mt-3 block w-full rounded-xl bg-orange-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-orange-700 active:scale-95">
               Começar agora
             </Link>
           </article>
@@ -144,9 +148,9 @@ export default function PlanosPage() {
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
 
           {/* Impulso */}
-          <article className="flex h-full flex-col rounded-2xl border-2 border-red-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <article className="flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
             <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-red-100 text-2xl md:text-3xl">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
                 🚀
               </div>
 
@@ -156,7 +160,7 @@ export default function PlanosPage() {
             </div>
 
             <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-red-600">
+              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
                 R$ 9,90
               </span>
             </div>
@@ -184,17 +188,17 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Impulso"
-              className="mt-3 block w-full rounded-xl bg-red-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-red-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
             >
               Escolher plano →
             </Link>
           </article>
 
           {/* Vitrine */}
-          <article className="relative flex h-full flex-col rounded-2xl border-2 border-amber-500 bg-white p-4 md:scale-[1.02] md:rounded-3xl md:p-7 shadow-xl ring-4 ring-amber-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+          <article className="relative flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
             
             <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-amber-100 text-2xl md:text-3xl">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
                 ⭐
               </div>
 
@@ -204,7 +208,7 @@ export default function PlanosPage() {
             </div>
 
             <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-amber-600">
+              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
                 R$ 19,90
               </span>
 
@@ -236,20 +240,20 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Vitrine"
-              className="mt-3 block w-full rounded-xl bg-amber-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-amber-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
             >
               Escolher plano →
             </Link>
           </article>
 
           {/* Exclusivo */}
-          <article className="relative flex h-full flex-col rounded-2xl border-2 border-emerald-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
+          <article className="relative flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-sky-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
               DESTAQUE
             </div>
 
             <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-emerald-100 text-2xl md:text-3xl">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
                 👑
               </div>
 
@@ -259,7 +263,7 @@ export default function PlanosPage() {
             </div>
 
             <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-emerald-600">
+              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
                 R$ 29,90
               </span>
 
@@ -296,7 +300,7 @@ export default function PlanosPage() {
 
             <Link
               href="/anunciar?plano=Exclusivo"
-              className="mt-3 block w-full rounded-xl bg-emerald-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95"
+              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
             >
               Escolher plano →
             </Link>
