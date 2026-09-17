@@ -4,7 +4,7 @@ export default function PromocoesPage() {
   return (
     <PaginaCategoria
       titulo="Promoções"
-      descricao="Ofertas, descontos e oportunidades dos comércios de Nova União."
+      descricao="Ofertas, descontos e oportunidades dos comércios da sua cidade."
       categoriaBanco="Promoções"
       corHero="from-orange-600 to-red-700"
       imagemHero="/images/categorias/promocoes.png"

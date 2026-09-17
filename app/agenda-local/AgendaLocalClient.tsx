@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
 type Profissional = {
@@ -12,6 +13,7 @@ type Profissional = {
   instagram?: string | null;
   descricao?: string | null;
   foto_url?: string | null;
+  cidade?: string | null;
 };
 
 type ContatoUtil = {
@@ -21,6 +23,14 @@ type ContatoUtil = {
   telefone: string;
   ordem: number;
   ativo: boolean;
+  cidade?: string | null;
+};
+
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
 };
 
 function telefoneParaLink(telefone: string) {
@@ -33,95 +43,289 @@ function normalizarTexto(texto?: string | null) {
   return texto
     .trim()
     .toLocaleLowerCase('pt-BR')
-    .replace(/(^|[\s\-–—/])([a-záàâãéèêíïóôõöúç])/g, (match) =>
-      match.toLocaleUpperCase('pt-BR')
+    .replace(
+      /(^|[\s\-–—/])([a-záàâãéèêíïóôõöúç])/g,
+      (match) => match.toLocaleUpperCase('pt-BR')
     );
 }
 
 export default function AgendaLocalPage() {
-  const [profissionais, setProfissionais] = useState<Profissional[]>([]);
-  const [contatosUteis, setContatosUteis] = useState<ContatoUtil[]>([]);
+  return (
+    <Suspense fallback={<CarregandoAgendaLocal />}>
+      <AgendaLocalConteudo />
+    </Suspense>
+  );
+}
+
+function AgendaLocalConteudo() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const cidadeUrl = searchParams.get('cidade') || '';
+
+  const [profissionais, setProfissionais] =
+    useState<Profissional[]>([]);
+
+  const [contatosUteis, setContatosUteis] =
+    useState<ContatoUtil[]>([]);
+
+  const [cidades, setCidades] =
+    useState<Cidade[]>([]);
+
+  const [cidadeSelecionada, setCidadeSelecionada] =
+    useState(cidadeUrl);
+
   const [busca, setBusca] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [loadingContatos, setLoadingContatos] = useState(true);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [loadingContatos, setLoadingContatos] =
+    useState(true);
+
+  /*
+   * =====================================================
+   * SINCRONIZAR CIDADE DA URL
+   * =====================================================
+   */
 
   useEffect(() => {
-    carregarTudo();
+    setCidadeSelecionada(cidadeUrl);
+  }, [cidadeUrl]);
+
+  /*
+   * =====================================================
+   * CARREGAR CIDADES
+   * =====================================================
+   */
+
+  useEffect(() => {
+    carregarCidades();
   }, []);
 
-  async function carregarTudo() {
-    await Promise.all([
-      carregarProfissionais(),
-      carregarContatosUteis(),
-    ]);
+  /*
+   * =====================================================
+   * CARREGAR CONTEÚDO DA CIDADE
+   * =====================================================
+   */
+
+  useEffect(() => {
+    carregarProfissionais();
+    carregarContatosUteis();
+  }, [cidadeSelecionada]);
+
+  async function carregarCidades() {
+    const { data, error } = await supabase
+      .from('cidades')
+      .select('id, nome, slug, estado')
+      .eq('ativa', true)
+      .order('nome', { ascending: true });
+
+    if (error) {
+      console.error(
+        'Erro ao carregar cidades:',
+        error
+      );
+
+      setCidades([]);
+      return;
+    }
+
+    setCidades((data || []) as Cidade[]);
   }
+
+  /*
+   * =====================================================
+   * PROFISSIONAIS / EMPRESAS
+   * =====================================================
+   */
 
   async function carregarProfissionais() {
     setLoading(true);
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('agenda_local')
       .select('*')
       .eq('ativo', true)
-      .eq('aprovado', true)
-      .order('data_cadastro', { ascending: false });
+      .eq('aprovado', true);
+
+    if (cidadeSelecionada) {
+      query = query.eq(
+        'cidade',
+        cidadeSelecionada
+      );
+    }
+
+    const { data, error } = await query
+      .order(
+        'data_cadastro',
+        { ascending: false }
+      );
 
     if (error) {
-      console.error('Erro ao carregar profissionais:', error);
+      console.error(
+        'Erro ao carregar profissionais:',
+        error
+      );
+
+      setProfissionais([]);
     } else {
-      setProfissionais((data || []) as Profissional[]);
+      setProfissionais(
+        (data || []) as Profissional[]
+      );
     }
 
     setLoading(false);
   }
 
+  /*
+   * =====================================================
+   * CONTATOS ÚTEIS
+   * =====================================================
+   */
+
   async function carregarContatosUteis() {
     setLoadingContatos(true);
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('contatos_uteis')
-      .select('id, categoria, nome, telefone, ordem, ativo')
-      .eq('ativo', true)
-      .order('categoria', { ascending: true })
-      .order('ordem', { ascending: true });
+      .select(
+        'id, categoria, nome, telefone, ordem, ativo, cidade'
+      )
+      .eq('ativo', true);
+
+    if (cidadeSelecionada) {
+      query = query.eq(
+        'cidade',
+        cidadeSelecionada
+      );
+    }
+
+    const { data, error } = await query
+      .order(
+        'categoria',
+        { ascending: true }
+      )
+      .order(
+        'ordem',
+        { ascending: true }
+      );
 
     if (error) {
-      console.error('Erro ao carregar contatos úteis:', error);
+      console.error(
+        'Erro ao carregar contatos úteis:',
+        error
+      );
+
+      setContatosUteis([]);
     } else {
-      setContatosUteis((data || []) as ContatoUtil[]);
+      setContatosUteis(
+        (data || []) as ContatoUtil[]
+      );
     }
 
     setLoadingContatos(false);
   }
 
-  const profissionaisFiltrados = useMemo(() => {
-    const termo = busca.trim().toLowerCase();
+  /*
+   * =====================================================
+   * ALTERAR CIDADE
+   * =====================================================
+   */
 
-    if (!termo) return profissionais;
+  function alterarCidade(novaCidade: string) {
+    setCidadeSelecionada(novaCidade);
 
-    return profissionais.filter(
-      (item) =>
-        item.nome_completo?.toLowerCase().includes(termo) ||
-        item.profissao?.toLowerCase().includes(termo)
+    const parametros =
+      new URLSearchParams(
+        searchParams.toString()
+      );
+
+    if (novaCidade) {
+      parametros.set(
+        'cidade',
+        novaCidade
+      );
+    } else {
+      parametros.delete('cidade');
+    }
+
+    const queryString =
+      parametros.toString();
+
+    router.replace(
+      queryString
+        ? `?${queryString}`
+        : '?',
+      {
+        scroll: false,
+      }
     );
-  }, [profissionais, busca]);
+  }
+
+  /*
+   * =====================================================
+   * BUSCA
+   * =====================================================
+   */
+
+  const profissionaisFiltrados =
+    useMemo(() => {
+      const termo =
+        busca.trim().toLowerCase();
+
+      if (!termo) {
+        return profissionais;
+      }
+
+      return profissionais.filter(
+        (item) =>
+          item.nome_completo
+            ?.toLowerCase()
+            .includes(termo) ||
+          item.profissao
+            ?.toLowerCase()
+            .includes(termo) ||
+          item.descricao
+            ?.toLowerCase()
+            .includes(termo) ||
+          item.cidade
+            ?.toLowerCase()
+            .includes(termo)
+      );
+    }, [profissionais, busca]);
+
+  /*
+   * =====================================================
+   * CONTATOS POR CATEGORIA
+   * =====================================================
+   */
 
   const contatosSaude = useMemo(
     () =>
       contatosUteis.filter(
-        (contato) => contato.categoria === 'Saúde'
+        (contato) =>
+          contato.categoria === 'Saúde'
       ),
     [contatosUteis]
   );
 
-  const contatosAdministracao = useMemo(
-    () =>
-      contatosUteis.filter(
-        (contato) =>
-          contato.categoria === 'Administração Pública'
-      ),
-    [contatosUteis]
-  );
+  const contatosAdministracao =
+    useMemo(
+      () =>
+        contatosUteis.filter(
+          (contato) =>
+            contato.categoria ===
+            'Administração Pública'
+        ),
+      [contatosUteis]
+    );
+
+  /*
+   * =====================================================
+   * PÁGINA
+   * =====================================================
+   */
 
   return (
     <main className="bg-slate-50 min-h-screen">
@@ -135,7 +339,7 @@ export default function AgendaLocalPage() {
           </h1>
 
           <p className="text-emerald-100 text-sm md:text-base mt-1">
-            Profissionais, serviços e contatos úteis de Nova União
+            Profissionais, serviços e contatos úteis da sua cidade
           </p>
 
         </div>
@@ -173,10 +377,10 @@ export default function AgendaLocalPage() {
               <div className="space-y-1">
 
                 {contatosSaude.map((contato) => {
-
-                  const numero = telefoneParaLink(
-                    contato.telefone || ''
-                  );
+                  const numero =
+                    telefoneParaLink(
+                      contato.telefone || ''
+                    );
 
                   return (
                     <div
@@ -256,60 +460,62 @@ export default function AgendaLocalPage() {
 
               <div className="space-y-1">
 
-                {contatosAdministracao.map((contato) => {
+                {contatosAdministracao.map(
+                  (contato) => {
+                    const numero =
+                      telefoneParaLink(
+                        contato.telefone || ''
+                      );
 
-                  const numero = telefoneParaLink(
-                    contato.telefone || ''
-                  );
+                    return (
+                      <div
+                        key={contato.id}
+                        className="
+                          border-b border-slate-200
+                          last:border-b-0
+                          py-1.5
+                          flex
+                          justify-between
+                          items-center
+                          gap-3
+                        "
+                      >
 
-                  return (
-                    <div
-                      key={contato.id}
-                      className="
-                        border-b border-slate-200
-                        last:border-b-0
-                        py-1.5
-                        flex
-                        justify-between
-                        items-center
-                        gap-3
-                      "
-                    >
+                        <div className="text-sm font-medium text-slate-700">
+                          {contato.nome}
+                        </div>
 
-                      <div className="text-sm font-medium text-slate-700">
-                        {contato.nome}
+                        {contato.telefone ? (
+
+                          <a
+                            href={
+                              numero
+                                ? `tel:${numero}`
+                                : undefined
+                            }
+                            className="
+                              text-blue-700
+                              font-semibold
+                              text-sm
+                              whitespace-nowrap
+                              hover:underline
+                            "
+                          >
+                            {contato.telefone}
+                          </a>
+
+                        ) : (
+
+                          <span className="text-xs text-slate-400">
+                            Sem telefone
+                          </span>
+
+                        )}
+
                       </div>
-
-                      {contato.telefone ? (
-
-                        <a
-                          href={
-                            numero
-                              ? `tel:${numero}`
-                              : undefined
-                          }
-                          className="
-                            text-blue-700
-                            font-semibold
-                            text-sm
-                            whitespace-nowrap
-                            hover:underline
-                          "
-                        >
-                          {contato.telefone}
-                        </a>
-
-                      ) : (
-
-                        <span className="text-xs text-slate-400">
-                          Sem telefone
-                        </span>
-
-                      )}
-
-                    </div>
-                  );
-                })}
+                    );
+                  }
+                )}
 
               </div>
 
@@ -329,12 +535,18 @@ export default function AgendaLocalPage() {
             </p>
 
             <p className="text-sm text-orange-600 font-medium leading-relaxed mt-1">
-              Todos os dias moradores procuram profissionais e serviços locais
-              em Nova União.
+              Todos os dias moradores procuram profissionais e serviços
+              locais na sua cidade.
             </p>
 
             <a
-              href="/agenda-local/cadastro"
+              href={
+                cidadeSelecionada
+                  ? `/agenda-local/cadastro?cidade=${encodeURIComponent(
+                      cidadeSelecionada
+                    )}`
+                  : '/agenda-local/cadastro'
+              }
               className="
                 mt-3
                 block
@@ -376,13 +588,15 @@ export default function AgendaLocalPage() {
 
           </div>
 
-          {/* BUSCA */}
-          <div className="max-w-xl mx-auto mb-6">
+          {/* FILTROS */}
+          <div className="max-w-3xl mx-auto mb-6 grid grid-cols-1 md:grid-cols-[1fr_260px] gap-3">
 
             <input
               type="text"
               value={busca}
-              onChange={(e) => setBusca(e.target.value)}
+              onChange={(e) =>
+                setBusca(e.target.value)
+              }
               placeholder="Pesquisar profissional ou serviço..."
               className="
                 w-full
@@ -399,6 +613,46 @@ export default function AgendaLocalPage() {
                 focus:ring-emerald-100
               "
             />
+
+            <select
+              value={cidadeSelecionada}
+              onChange={(event) =>
+                alterarCidade(
+                  event.target.value
+                )
+              }
+              aria-label="Selecionar cidade"
+              className="
+                w-full
+                bg-white
+                border
+                border-slate-300
+                rounded-xl
+                px-4
+                py-3
+                text-sm
+                text-slate-700
+                focus:outline-none
+                focus:border-emerald-500
+                focus:ring-2
+                focus:ring-emerald-100
+              "
+            >
+
+              <option value="">
+                Todas as cidades
+              </option>
+
+              {cidades.map((cidade) => (
+                <option
+                  key={cidade.id}
+                  value={cidade.nome}
+                >
+                  {cidade.nome}
+                </option>
+              ))}
+
+            </select>
 
           </div>
 
@@ -432,182 +686,202 @@ export default function AgendaLocalPage() {
               "
             >
 
-              {profissionaisFiltrados.map((item) => {
+              {profissionaisFiltrados.map(
+                (item) => {
 
-                const numeroWhatsapp =
-                  item.whatsapp?.replace(/\D/g, '') || '';
+                  const numeroWhatsapp =
+                    item.whatsapp
+                      ?.replace(/\D/g, '') ||
+                    '';
 
-                const instagram =
-                  item.instagram
-                    ?.replace('@', '')
-                    .replace('https://instagram.com/', '')
-                    .replace('https://www.instagram.com/', '')
-                    .replace(/\/$/, '');
+                  const instagram =
+                    item.instagram
+                      ?.replace('@', '')
+                      .replace(
+                        'https://instagram.com/',
+                        ''
+                      )
+                      .replace(
+                        'https://www.instagram.com/',
+                        ''
+                      )
+                      .replace(/\/$/, '');
 
-                return (
+                  return (
 
-                  <article
-                    key={item.id}
-                    className="
-                      bg-white
-                      rounded-2xl
-                      shadow-sm
-                      border
-                      border-slate-200
-                      overflow-hidden
-                      hover:shadow-md
-                      transition
-                      flex
-                      flex-col
-                      min-w-0
-                    "
-                  >
+                    <article
+                      key={item.id}
+                      className="
+                        bg-white
+                        rounded-2xl
+                        shadow-sm
+                        border
+                        border-slate-200
+                        overflow-hidden
+                        hover:shadow-md
+                        transition
+                        flex
+                        flex-col
+                        min-w-0
+                      "
+                    >
 
-                    {/* FOTO */}
-                    <div className="relative w-full h-32 sm:h-36 md:h-40 bg-white border-b border-slate-100">
+                      {/* FOTO */}
+                      <div className="relative w-full h-32 sm:h-36 md:h-40 bg-white border-b border-slate-100">
 
-                      {item.foto_url ? (
+                        {item.foto_url ? (
 
-                        <Image
-                          src={item.foto_url}
-                          alt={item.nome_completo || 'Profissional da Agenda Local'}
-                          fill
-                          sizes="
-                            (max-width: 767px) 50vw,
-                            (max-width: 1279px) 33vw,
-                            20vw
-                          "
-                          className="object-contain p-1"
-                        />
-
-                      ) : (
-
-                        <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-                          Sem foto
-                        </div>
-
-                      )}
-
-                    </div>
-
-                    {/* CONTEÚDO */}
-                    <div className="p-3 flex flex-col flex-1 min-w-0">
-
-                      {/* NOME */}
-                      <h3
-                        className="
-                          text-sm
-                          md:text-[15px]
-                          font-extrabold
-                          text-slate-900
-                          leading-tight
-                          line-clamp-2
-                        "
-                      >
-                        {normalizarTexto(item.nome_completo)}
-                      </h3>
-
-                      {/* PROFISSÃO */}
-                      <p
-                        className="
-                          text-xs
-                          md:text-sm
-                          text-emerald-700
-                          font-semibold
-                          leading-snug
-                          mt-1
-                          line-clamp-2
-                        "
-                      >
-                        {normalizarTexto(item.profissao)}
-                      </p>
-
-                      {/* DESCRIÇÃO */}
-                      {item.descricao && (
-
-                        <p
-                          className="
-                            text-xs
-                            text-slate-600
-                            leading-relaxed
-                            mt-2
-                            line-clamp-3
-                          "
-                        >
-                          {item.descricao}
-                        </p>
-
-                      )}
-
-                      {/* BOTÕES */}
-                      <div className="flex gap-2 mt-auto pt-3">
-
-                        {/* WHATSAPP */}
-                        {numeroWhatsapp && (
-
-                          <a
-                            href={`https://wa.me/55${numeroWhatsapp}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`WhatsApp de ${item.nome_completo}`}
-                            title="WhatsApp"
-                            className="
-                              flex-1
-                              h-9
-                              bg-green-600
-                              hover:bg-green-700
-                              text-white
-                              rounded-xl
-                              flex
-                              items-center
-                              justify-center
-                              transition
+                          <Image
+                            src={item.foto_url}
+                            alt={
+                              item.nome_completo ||
+                              'Profissional da Agenda Local'
+                            }
+                            fill
+                            sizes="
+                              (max-width: 767px) 50vw,
+                              (max-width: 1279px) 33vw,
+                              20vw
                             "
-                          >
+                            className="object-contain p-1"
+                          />
 
-                            <WhatsAppIcon />
+                        ) : (
 
-                          </a>
-
-                        )}
-
-                        {/* INSTAGRAM */}
-                        {instagram && (
-
-                          <a
-                            href={`https://instagram.com/${instagram}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`Instagram de ${item.nome_completo}`}
-                            title="Instagram"
-                            className="
-                              flex-1
-                              h-9
-                              bg-pink-600
-                              hover:bg-pink-700
-                              text-white
-                              rounded-xl
-                              flex
-                              items-center
-                              justify-center
-                              transition
-                            "
-                          >
-
-                            <InstagramIcon />
-
-                          </a>
+                          <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
+                            Sem foto
+                          </div>
 
                         )}
 
                       </div>
 
-                    </div>
+                      {/* CONTEÚDO */}
+                      <div className="p-3 flex flex-col flex-1 min-w-0">
 
-                  </article>
+                        {/* NOME */}
+                        <h3
+                          className="
+                            text-sm
+                            md:text-[15px]
+                            font-extrabold
+                            text-slate-900
+                            leading-tight
+                            line-clamp-2
+                          "
+                        >
+                          {normalizarTexto(
+                            item.nome_completo
+                          )}
+                        </h3>
 
-                );
-              })}
+                        {/* PROFISSÃO */}
+                        <p
+                          className="
+                            text-xs
+                            md:text-sm
+                            text-emerald-700
+                            font-semibold
+                            leading-snug
+                            mt-1
+                            line-clamp-2
+                          "
+                        >
+                          {normalizarTexto(
+                            item.profissao
+                          )}
+                        </p>
+
+                        {/* CIDADE */}
+                        {item.cidade && (
+                          <p className="mt-1 text-xs font-medium text-slate-500">
+                            {item.cidade}
+                          </p>
+                        )}
+
+                        {/* DESCRIÇÃO */}
+                        {item.descricao && (
+
+                          <p
+                            className="
+                              text-xs
+                              text-slate-600
+                              leading-relaxed
+                              mt-2
+                              line-clamp-3
+                            "
+                          >
+                            {item.descricao}
+                          </p>
+
+                        )}
+
+                        {/* BOTÕES */}
+                        <div className="flex gap-2 mt-auto pt-3">
+
+                          {/* WHATSAPP */}
+                          {numeroWhatsapp && (
+
+                            <a
+                              href={`https://wa.me/55${numeroWhatsapp}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`WhatsApp de ${item.nome_completo}`}
+                              title="WhatsApp"
+                              className="
+                                flex-1
+                                h-9
+                                bg-green-600
+                                hover:bg-green-700
+                                text-white
+                                rounded-xl
+                                flex
+                                items-center
+                                justify-center
+                                transition
+                              "
+                            >
+                              <WhatsAppIcon />
+                            </a>
+
+                          )}
+
+                          {/* INSTAGRAM */}
+                          {instagram && (
+
+                            <a
+                              href={`https://instagram.com/${instagram}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Instagram de ${item.nome_completo}`}
+                              title="Instagram"
+                              className="
+                                flex-1
+                                h-9
+                                bg-pink-600
+                                hover:bg-pink-700
+                                text-white
+                                rounded-xl
+                                flex
+                                items-center
+                                justify-center
+                                transition
+                              "
+                            >
+                              <InstagramIcon />
+                            </a>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    </article>
+
+                  );
+                }
+              )}
 
             </div>
 
@@ -620,7 +894,6 @@ export default function AgendaLocalPage() {
     </main>
   );
 }
-
 
 /* ========================================================= */
 /* ÍCONE WHATSAPP */
@@ -637,7 +910,6 @@ function WhatsAppIcon() {
     </svg>
   );
 }
-
 
 /* ========================================================= */
 /* ÍCONE INSTAGRAM */
@@ -671,5 +943,19 @@ function InstagramIcon() {
         className="fill-current stroke-none"
       />
     </svg>
+  );
+}
+
+function CarregandoAgendaLocal() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+
+        <p className="mt-4 font-semibold text-slate-700">
+          Carregando Agenda Local...
+        </p>
+      </div>
+    </main>
   );
 }

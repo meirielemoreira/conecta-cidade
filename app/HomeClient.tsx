@@ -29,6 +29,14 @@ type Profissional = {
   descricao?: string | null;
   whatsapp?: string | null;
   instagram?: string | null;
+  cidade?: string | null;
+};
+
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
 };
 
 type CategoriaNovidade = {
@@ -82,10 +90,10 @@ const categoriasNovidades: CategoriaNovidade[] = [
     imagemPadrao: '/images/categorias/onde-role.png',
   },
   {
-    nome: 'Nova União Informa',
+    nome: 'Informa Cidade',
     categoriaBanco: 'Nova União Informa',
     rota: '/nova-uniao-informa',
-    faixa: 'NOVA UNIÃO INFORMA',
+    faixa: 'INFORMA CIDADE',
     corFaixa: 'bg-slate-700',
     imagemPadrao: '/images/categorias/nova-uniao-informa.png',
   },
@@ -174,63 +182,90 @@ export default function Home() {
   const router = useRouter();
 
   const [termoBusca, setTermoBusca] = useState('');
+  const [cidadeSelecionada, setCidadeSelecionada] = useState('');
+  const [cidades, setCidades] = useState<Cidade[]>([]);
   const [destaques, setDestaques] = useState<Anuncio[]>([]);
   const [profissionaisMes, setProfissionaisMes] = useState<Profissional[]>([]);
   const [loadingDestaques, setLoadingDestaques] = useState(true);
   const [loadingProfissionais, setLoadingProfissionais] = useState(true);
 
   useEffect(() => {
-   const carregarDestaques = async () => {
-  setLoadingDestaques(true);
+    const carregarCidades = async () => {
+      const { data, error } = await supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true });
 
-  const { data, error } = await supabase
-    .from('anuncios')
-    .select(`
-      id,
-      titulo,
-      nome_loja,
-      preco,
-      imagens,
-      plano_usado,
-      categoria,
-      cidade,
-      telefone,
-      instagram,
-      destaque
-    `)
-    .eq('aprovado', true)
-    .eq('ativo', true)
-    .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Erro ao carregar cidades:', error);
+        setCidades([]);
+        return;
+      }
 
-  if (error) {
-    console.error('Erro ao carregar destaques:', error);
-    setDestaques([]);
-    setLoadingDestaques(false);
-    return;
-  }
+      setCidades(data || []);
+    };
 
-  const anunciosComDestaque = (data || []).filter((anuncio) => {
-    const plano = anuncio.plano_usado
-      ?.trim()
-      .toLowerCase();
+    carregarCidades();
+  }, []);
 
-    return (
-      anuncio.destaque === true ||
-      plano === 'impulso' ||
-      plano === 'vitrine' ||
-      plano === 'exclusivo' ||
-      plano === 'premium'
-    );
-  });
+  useEffect(() => {
+    const carregarDestaques = async () => {
+      setLoadingDestaques(true);
 
-  setDestaques(anunciosComDestaque);
-  setLoadingDestaques(false);
-};
+      let query = supabase
+        .from('anuncios')
+        .select(`
+          id,
+          titulo,
+          nome_loja,
+          preco,
+          imagens,
+          plano_usado,
+          categoria,
+          cidade,
+          telefone,
+          instagram,
+          destaque
+        `)
+        .eq('aprovado', true)
+        .eq('ativo', true);
+
+      if (cidadeSelecionada) {
+        query = query.eq('cidade', cidadeSelecionada);
+      }
+
+      const { data, error } = await query.order('created_at', {
+        ascending: false,
+      });
+
+      if (error) {
+        console.error('Erro ao carregar destaques:', error);
+        setDestaques([]);
+        setLoadingDestaques(false);
+        return;
+      }
+
+      const anunciosComDestaque = (data || []).filter((anuncio) => {
+        const plano = anuncio.plano_usado?.trim().toLowerCase();
+
+        return (
+          anuncio.destaque === true ||
+          plano === 'impulso' ||
+          plano === 'vitrine' ||
+          plano === 'exclusivo' ||
+          plano === 'premium'
+        );
+      });
+
+      setDestaques(anunciosComDestaque);
+      setLoadingDestaques(false);
+    };
 
     const carregarProfissionais = async () => {
       setLoadingProfissionais(true);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('agenda_local')
         .select(`
           id,
@@ -239,10 +274,17 @@ export default function Home() {
           foto_url,
           descricao,
           whatsapp,
-          instagram
+          instagram,
+          cidade
         `)
         .eq('aprovado', true)
-        .eq('ativo', true)
+        .eq('ativo', true);
+
+      if (cidadeSelecionada) {
+        query = query.eq('cidade', cidadeSelecionada);
+      }
+
+      const { data, error } = await query
         .order('data_cadastro', { ascending: false })
         .limit(6);
 
@@ -258,12 +300,15 @@ export default function Home() {
 
     carregarDestaques();
     carregarProfissionais();
-  }, []);
+  }, [cidadeSelecionada]);
 
   const pesquisar = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const termo = termoBusca.trim().toLowerCase();
+    const parametroCidade = cidadeSelecionada
+      ? `?cidade=${encodeURIComponent(cidadeSelecionada)}`
+      : '';
 
     if (!termo) {
       return;
@@ -278,7 +323,7 @@ export default function Home() {
       termo.includes('construção') ||
       termo.includes('construcao')
     ) {
-      router.push('/morar-construir');
+      router.push(`/morar-construir${parametroCidade}`);
       return;
     }
 
@@ -289,7 +334,7 @@ export default function Home() {
       termo.includes('veiculo') ||
       termo.includes('oficina')
     ) {
-      router.push('/motores-rodas');
+      router.push(`/motores-rodas${parametroCidade}`);
       return;
     }
 
@@ -301,7 +346,7 @@ export default function Home() {
       termo.includes('produtor') ||
       termo.includes('artesanato')
     ) {
-      router.push('/direto-do-produtor');
+      router.push(`/direto-do-produtor${parametroCidade}`);
       return;
     }
 
@@ -312,7 +357,7 @@ export default function Home() {
       termo.includes('rolê') ||
       termo.includes('role')
     ) {
-      router.push('/onde-role');
+      router.push(`/onde-role${parametroCidade}`);
       return;
     }
 
@@ -324,11 +369,11 @@ export default function Home() {
       termo.includes('serviço') ||
       termo.includes('servico')
     ) {
-      router.push('/agenda-local');
+      router.push(`/agenda-local${parametroCidade}`);
       return;
     }
 
-    router.push('/promocoes');
+    router.push(`/promocoes${parametroCidade}`);
   };
 
   return (
@@ -338,7 +383,7 @@ export default function Home() {
 
   <Image
     src="/images/nova-uniao.jpg"
-    alt="Vista de Nova União, Minas Gerais"
+    alt="Vista de uma cidade de Minas Gerais"
     fill
     preload
     sizes="100vw"
@@ -357,13 +402,13 @@ export default function Home() {
     </div>
 
     <h1 className="max-w-4xl mx-auto text-4xl sm:text-5xl lg:text-[52px] font-extrabold leading-tight tracking-tight">
-      Tudo de
-      <span className="text-orange-400"> Nova União </span>
+      Tudo da sua
+      <span className="text-orange-400"> cidade </span>
       em um só lugar
     </h1>
 
     <p className="max-w-2xl mx-auto text-base sm:text-lg text-white/90 mt-4 leading-relaxed">
-      Anuncie e encontre imóveis, carros, serviços e promoções em Nova União.
+      Anuncie e encontre imóveis, carros, serviços, promoções e produtos de produtores locais.
     </p>
 
     <form
@@ -378,6 +423,20 @@ export default function Home() {
           placeholder="O que você procura hoje?"
           className="min-w-0 flex-1 h-12 sm:h-13 rounded-xl bg-white text-slate-800 px-4 sm:px-5 text-base focus:outline-none"
         />
+
+        <select
+          value={cidadeSelecionada}
+          onChange={(event) => setCidadeSelecionada(event.target.value)}
+          aria-label="Selecionar cidade"
+          className="min-w-0 sm:w-52 h-12 sm:h-13 rounded-xl bg-slate-50 text-slate-800 px-4 text-sm sm:text-base focus:outline-none border border-slate-200"
+        >
+          <option value="">Todas as cidades</option>
+          {cidades.map((cidade) => (
+            <option key={cidade.id} value={cidade.nome}>
+              {cidade.nome}
+            </option>
+          ))}
+        </select>
 
         <button
           type="submit"
@@ -415,7 +474,7 @@ export default function Home() {
             </h2>
 
             <p className="text-slate-500 mt-2">
-              Confira as novidades de Nova União.
+              Confira as novidades.
             </p>
           </div>
 
@@ -432,6 +491,7 @@ export default function Home() {
             <CategoryCard
               key={categoria.rota}
               category={categoria}
+              cidadeSelecionada={cidadeSelecionada}
             />
           ))}
         </div>
@@ -581,7 +641,7 @@ export default function Home() {
 
           <p className="text-slate-600 leading-relaxed mt-3 max-w-sm">
             Divulgue produtos, serviços, imóveis, veículos ou sua empresa
-            para moradores de Nova União.
+            para moradores da sua cidade.
           </p>
 
           <ul className="space-y-2 text-sm text-slate-700 mt-5 mb-7">
@@ -861,8 +921,10 @@ export default function Home() {
 
 function CategoryCard({
   category,
+  cidadeSelecionada,
 }: {
   category: CategoriaNovidade;
+  cidadeSelecionada: string;
 }) {
   const [anunciosCategoria, setAnunciosCategoria] = useState<Anuncio[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -897,7 +959,8 @@ function CategoryCard({
             publicar_em,
             encerrar_publicacao_em,
             destaque,
-            created_at
+            created_at,
+            cidade
           `)
           .eq('ativo', true)
           .lte('publicar_em', hojeLocal)
@@ -928,11 +991,15 @@ function CategoryCard({
           return;
         }
 
-        const informativosConvertidos: Anuncio[] = (data || []).map(
+        const informativosFiltrados = cidadeSelecionada
+          ? (data || []).filter((informativo) => informativo.cidade === cidadeSelecionada)
+          : data || [];
+
+        const informativosConvertidos: Anuncio[] = informativosFiltrados.map(
           (informativo) => ({
             id: informativo.id,
             titulo: informativo.titulo,
-            nome_loja: 'Nova União Informa',
+            nome_loja: 'Informa Cidade',
             preco: null,
 
             /*
@@ -946,7 +1013,7 @@ function CategoryCard({
 
             plano_usado: null,
             categoria: 'Nova União Informa',
-            cidade: 'Nova União',
+            cidade: informativo.cidade || null,
             telefone: null,
             instagram: null,
             destaque: informativo.destaque,
@@ -1018,8 +1085,12 @@ function CategoryCard({
           return;
         }
 
+        const produtoresFiltrados = cidadeSelecionada
+          ? (data || []).filter((produtor) => produtor.cidade === cidadeSelecionada)
+          : data || [];
+
         const produtoresConvertidos: Anuncio[] =
-          (data || []).map((produtor) => ({
+          produtoresFiltrados.map((produtor) => ({
             id: produtor.id,
             titulo: produtor.produto,
             nome_loja: produtor.nome_produtor,
@@ -1031,7 +1102,7 @@ function CategoryCard({
 
             plano_usado: null,
             categoria: 'Direto do Produtor',
-            cidade: produtor.cidade || 'Nova União',
+            cidade: produtor.cidade || null,
             telefone: produtor.telefone || null,
             instagram: null,
             destaque: false,
@@ -1086,7 +1157,11 @@ function CategoryCard({
       }
 
       if (componenteAtivo) {
-        setAnunciosCategoria(data || []);
+        const anunciosFiltrados = cidadeSelecionada
+          ? (data || []).filter((anuncio) => anuncio.cidade === cidadeSelecionada)
+          : data || [];
+
+        setAnunciosCategoria(anunciosFiltrados);
         setCurrentIndex(0);
       }
     };
@@ -1096,7 +1171,7 @@ function CategoryCard({
     return () => {
       componenteAtivo = false;
     };
-  }, [category.categoriaBanco, category.nome]);
+  }, [category.categoriaBanco, category.nome, cidadeSelecionada]);
 
   /*
    * Mantém a rotação automática já existente.
@@ -1134,7 +1209,9 @@ function CategoryCard({
 
   return (
     <Link
-      href={category.rota}
+      href={cidadeSelecionada
+        ? `${category.rota}?cidade=${encodeURIComponent(cidadeSelecionada)}`
+        : category.rota}
       className="group block"
       aria-label={`Ver anúncios de ${category.nome}`}
     >
@@ -1172,7 +1249,7 @@ function CategoryCard({
           )}
 
           <p className="text-xs text-slate-500 mt-auto pt-2">
-            {anuncioAtual?.cidade || 'Nova União'} • MG
+            {anuncioAtual?.cidade || cidadeSelecionada || 'Cidade não informada'} • MG
           </p>
         </div>
       </article>
@@ -1373,7 +1450,7 @@ function DestaqueRotativoCard({
 
         <div className="mt-auto">
           <p className="text-[11px] text-slate-500 mb-2">
-            {anuncioAtual.cidade || 'Nova União'} • MG
+            {anuncioAtual.cidade || 'Cidade não informada'} • MG
           </p>
 
           {(whatsapp || instagram) && (
@@ -1527,7 +1604,7 @@ function ProfissionalRotativoCard({
             </h3>
 
             <p className="text-sm leading-snug text-slate-500 mt-2">
-              Seja encontrado por moradores de Nova União.
+              Seja encontrado por moradores da sua cidade.
             </p>
 
             <span className="text-emerald-600 font-semibold text-sm mt-auto">
@@ -1596,7 +1673,7 @@ function ProfissionalRotativoCard({
         </p>
 
         <p className="text-[11px] text-slate-500 mt-2">
-          Nova União • MG
+          {profissionalAtual.cidade || 'Cidade não informada'} • MG
         </p>
 
         <div className="mt-auto">

@@ -2,20 +2,22 @@ import type { Metadata } from 'next';
 import DiretoDoProdutorClient from './DiretoDoProdutorClient';
 
 export const metadata: Metadata = {
-  title: 'Direto do Produtor em Nova União MG',
+  title: 'Direto do Produtor | Conecta Cidade',
 
   description:
-    'Encontre produtores locais, alimentos, artesanato e produtos da agricultura familiar de Nova União/MG e região no Conecta Cidade.',
+    'Encontre produtores locais, alimentos, artesanato e produtos da agricultura familiar no Conecta Cidade.',
 
   keywords: [
-    'Direto do Produtor Nova União',
-    'produtores Nova União MG',
-    'produtor local Nova União',
-    'agricultura familiar Nova União MG',
-    'produtos rurais Nova União',
-    'alimentos artesanais Nova União MG',
-    'produtos locais Nova União',
-    'produtores rurais Nova União MG',
+    'Direto do Produtor',
+    'produtores locais',
+    'produtor local',
+    'agricultura familiar',
+    'produtos rurais',
+    'alimentos artesanais',
+    'produtos locais',
+    'produtores rurais',
+    'produtores Minas Gerais',
+    'Conecta Cidade',
   ],
 
   alternates: {
@@ -23,9 +25,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Direto do Produtor em Nova União MG',
+    title: 'Direto do Produtor | Conecta Cidade',
     description:
-      'Conheça produtores locais e encontre alimentos, artesanato e produtos da agricultura familiar de Nova União/MG e região.',
+      'Conheça produtores locais e encontre alimentos, artesanato e produtos da agricultura familiar.',
     type: 'website',
     locale: 'pt_BR',
   },

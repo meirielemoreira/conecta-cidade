@@ -2,26 +2,28 @@ import type { Metadata } from 'next';
 import PaginaCategoria from '../../components/categorias/PaginaCategoria';
 
 export const metadata: Metadata = {
-  title: 'Motores & Rodas em Nova União MG',
+  title: 'Motores & Rodas | Conecta Cidade',
   description:
-    'Encontre carros, motos, peças, acessórios, oficinas e serviços automotivos em Nova União/MG no Conecta Cidade.',
+    'Encontre carros, motos, peças, acessórios, oficinas e serviços automotivos no Conecta Cidade.',
   keywords: [
-    'carros Nova União MG',
-    'motos Nova União MG',
-    'veículos Nova União MG',
-    'carros usados Nova União MG',
-    'motos usadas Nova União MG',
-    'peças automotivas Nova União',
-    'oficinas Nova União MG',
-    'serviços automotivos Nova União',
+    'carros',
+    'motos',
+    'veículos',
+    'carros usados',
+    'motos usadas',
+    'peças automotivas',
+    'oficinas',
+    'serviços automotivos',
+    'veículos Minas Gerais',
+    'Conecta Cidade',
   ],
   alternates: {
     canonical: '/motores-rodas',
   },
   openGraph: {
-    title: 'Motores & Rodas em Nova União MG',
+    title: 'Motores & Rodas | Conecta Cidade',
     description:
-      'Carros, motos, peças, acessórios, oficinas e serviços automotivos em Nova União/MG.',
+      'Carros, motos, peças, acessórios, oficinas e serviços automotivos.',
     type: 'website',
     locale: 'pt_BR',
   },

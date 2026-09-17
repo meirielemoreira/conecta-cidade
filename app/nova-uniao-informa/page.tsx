@@ -2,20 +2,21 @@ import type { Metadata } from 'next';
 import NovaUniaoInformaClient from './NovaUniaoInformaClient';
 
 export const metadata: Metadata = {
-  title: 'Nova União Informa',
+  title: 'Informa Cidade | Conecta Cidade',
 
   description:
-    'Acompanhe notícias, comunicados, campanhas, eventos e informações importantes para os moradores de Nova União/MG no Conecta Cidade.',
+    'Acompanhe notícias, comunicados, campanhas, eventos e informações importantes das cidades atendidas pelo Conecta Cidade.',
 
   keywords: [
-    'Nova União MG',
-    'notícias Nova União MG',
-    'informações Nova União MG',
-    'comunicados Nova União MG',
-    'eventos Nova União MG',
-    'Nova União Informa',
-    'notícias de Nova União',
-    'informações da cidade Nova União',
+    'Informa Cidade',
+    'notícias da cidade',
+    'informações da cidade',
+    'comunicados municipais',
+    'eventos da cidade',
+    'campanhas municipais',
+    'informações locais',
+    'notícias locais',
+    'Conecta Cidade',
   ],
 
   alternates: {
@@ -23,9 +24,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Nova União Informa',
+    title: 'Informa Cidade | Conecta Cidade',
     description:
-      'Notícias, comunicados, campanhas, eventos e informações importantes para os moradores de Nova União/MG.',
+      'Notícias, comunicados, campanhas, eventos e informações importantes das cidades atendidas pelo Conecta Cidade.',
     type: 'website',
     locale: 'pt_BR',
   },

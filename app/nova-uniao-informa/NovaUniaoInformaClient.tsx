@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import InformativoCard, {
   Informativo,
 } from '../../components/InformativoCard';
 import { supabase } from '../../lib/supabase';
 
 const TABELA = 'nova_uniao_informa';
+
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
+};
 
 function obterDataAtual(): string {
   const agora = new Date();
@@ -36,9 +44,26 @@ function obterMensagemErro(error: unknown): string {
 }
 
 export default function NovaUniaoInformaPage() {
+  return (
+    <Suspense fallback={<CarregandoInformaCidade />}>
+      <NovaUniaoInformaConteudo />
+    </Suspense>
+  );
+}
+
+function NovaUniaoInformaConteudo() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const cidadeUrl = searchParams.get('cidade') || '';
+
   const [informativos, setInformativos] = useState<
     Informativo[]
   >([]);
+
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadeSelecionada, setCidadeSelecionada] =
+    useState(cidadeUrl);
 
   const [busca, setBusca] = useState('');
   const [categoria, setCategoria] = useState('Todas');
@@ -50,27 +75,57 @@ export default function NovaUniaoInformaPage() {
   const [erro, setErro] = useState('');
 
   useEffect(() => {
+    setCidadeSelecionada(cidadeUrl);
+  }, [cidadeUrl]);
+
+  useEffect(() => {
+    const carregarCidades = async () => {
+      const { data, error } = await supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao carregar cidades:', error);
+        setCidades([]);
+        return;
+      }
+
+      setCidades(data || []);
+    };
+
+    void carregarCidades();
+  }, []);
+
+  useEffect(() => {
     const carregarInformativos = async () => {
       setCarregando(true);
       setErro('');
 
       const hoje = obterDataAtual();
 
-      const { data, error } = await supabase
+      let query = supabase
         .from(TABELA)
         .select('*')
         .eq('ativo', true)
         .lte('publicar_em', hoje)
         .or(
           `encerrar_publicacao_em.is.null,encerrar_publicacao_em.gte.${hoje}`
-        )
+        );
+
+      if (cidadeSelecionada) {
+        query = query.eq('cidade', cidadeSelecionada);
+      }
+
+      const { data, error } = await query
         .order('destaque', { ascending: false })
         .order('publicar_em', { ascending: false })
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error(
-          'Erro ao carregar Nova União Informa:',
+          'Erro ao carregar Informa Cidade:',
           error
         );
 
@@ -93,7 +148,30 @@ export default function NovaUniaoInformaPage() {
     };
 
     void carregarInformativos();
-  }, []);
+  }, [cidadeSelecionada]);
+
+  const alterarCidade = (novaCidade: string) => {
+    setCidadeSelecionada(novaCidade);
+
+    const parametros = new URLSearchParams(
+      searchParams.toString()
+    );
+
+    if (novaCidade) {
+      parametros.set('cidade', novaCidade);
+    } else {
+      parametros.delete('cidade');
+    }
+
+    const queryString = parametros.toString();
+
+    router.replace(
+      queryString ? `?${queryString}` : '?',
+      {
+        scroll: false,
+      }
+    );
+  };
 
   const categorias = useMemo(() => {
     const nomes = informativos
@@ -192,20 +270,22 @@ export default function NovaUniaoInformaPage() {
           </p>
 
           <h1 className="mt-3 text-4xl font-black md:text-6xl">
-            Nova União Informa
+            Informa Cidade
           </h1>
 
           <p className="mt-5 max-w-3xl text-base leading-relaxed text-slate-300 md:text-lg">
-            Notícias, comunicados, campanhas,
-            eventos e informações importantes para
-            os moradores de Nova União.
+            Notícias, comunicados, campanhas, eventos e
+            informações importantes das cidades atendidas pelo portal.
           </p>
         </div>
       </section>
 
       <section className="border-b border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-[minmax(0,1fr)_260px_220px]">
-          <label className="sr-only" htmlFor="busca-informativo">
+        <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-[minmax(0,1fr)_220px_240px_220px]">
+          <label
+            className="sr-only"
+            htmlFor="busca-informativo"
+          >
             Pesquisar informativos
           </label>
 
@@ -220,7 +300,39 @@ export default function NovaUniaoInformaPage() {
             className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
           />
 
-          <label className="sr-only" htmlFor="categoria-informativo">
+          <label
+            className="sr-only"
+            htmlFor="cidade-informativo"
+          >
+            Filtrar por cidade
+          </label>
+
+          <select
+            id="cidade-informativo"
+            value={cidadeSelecionada}
+            onChange={(event) =>
+              alterarCidade(event.target.value)
+            }
+            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+          >
+            <option value="">
+              Todas as cidades
+            </option>
+
+            {cidades.map((cidade) => (
+              <option
+                key={cidade.id}
+                value={cidade.nome}
+              >
+                {cidade.nome}
+              </option>
+            ))}
+          </select>
+
+          <label
+            className="sr-only"
+            htmlFor="categoria-informativo"
+          >
             Filtrar por categoria
           </label>
 
@@ -241,7 +353,10 @@ export default function NovaUniaoInformaPage() {
             ))}
           </select>
 
-          <label className="sr-only" htmlFor="ordenacao-informativo">
+          <label
+            className="sr-only"
+            htmlFor="ordenacao-informativo"
+          >
             Ordenar informativos
           </label>
 
@@ -309,7 +424,7 @@ export default function NovaUniaoInformaPage() {
               </h3>
 
               <p className="mt-2 text-slate-500">
-                Tente alterar a busca ou selecionar
+                Tente alterar a busca, a cidade ou selecionar
                 outra categoria.
               </p>
             </div>
@@ -364,6 +479,20 @@ export default function NovaUniaoInformaPage() {
           )}
         </div>
       </section>
+    </main>
+  );
+}
+
+function CarregandoInformaCidade() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600" />
+
+        <p className="mt-4 font-semibold text-slate-700">
+          Carregando Informa Cidade...
+        </p>
+      </div>
     </main>
   );
 }

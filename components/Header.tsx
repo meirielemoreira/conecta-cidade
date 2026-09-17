@@ -29,7 +29,7 @@ const menuItems = [
     href: '/onde-role',
   },
   {
-    label: 'Nova União Informa',
+    label: 'Informa Cidade',
     href: '/nova-uniao-informa',
   },
   {
@@ -60,11 +60,11 @@ export default function Header() {
             className="flex items-center gap-3 shrink-0"
             aria-label="Ir para a página inicial"
           >
-           <img
-  src="/conecta-cidade-app.png"
-  alt="Conecta Cidade"
-  className="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-cover shadow-md"
-/>
+            <img
+              src="/conecta-cidade-app.png"
+              alt="Conecta Cidade"
+              className="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-cover shadow-md"
+            />
 
             <div>
               <p className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">
@@ -72,7 +72,7 @@ export default function Header() {
               </p>
 
               <p className="text-xs text-slate-500">
-                Nova União • MG
+                A cidade, conectada.
               </p>
             </div>
           </Link>

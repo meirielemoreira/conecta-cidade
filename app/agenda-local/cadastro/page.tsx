@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '../../../lib/supabase/client';
 
 const LIMITE_FOTO = 5 * 1024 * 1024;
@@ -17,21 +17,46 @@ type FormAgenda = {
   instagram: string;
   endereco: string;
   descricao: string;
+  cidade: string;
 };
 
-export default function CadastroAgendaLocal() {
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
+};
+
+export default function CadastroAgendaLocalPage() {
+  return (
+    <Suspense fallback={<CarregandoCadastroAgenda />}>
+      <CadastroAgendaLocal />
+    </Suspense>
+  );
+}
+
+function CadastroAgendaLocal() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const supabase = useMemo(
     () => createClient(),
     []
   );
 
+  const cidadeUrl = searchParams.get('cidade') || '';
+
   const [verificandoLogin, setVerificandoLogin] =
     useState(true);
 
   const [userId, setUserId] =
     useState<string | null>(null);
+
+  const [cidades, setCidades] =
+    useState<Cidade[]>([]);
+
+  const [carregandoCidades, setCarregandoCidades] =
+    useState(true);
 
   const [form, setForm] =
     useState<FormAgenda>({
@@ -41,6 +66,7 @@ export default function CadastroAgendaLocal() {
       instagram: '',
       endereco: '',
       descricao: '',
+      cidade: cidadeUrl,
     });
 
   const [foto, setFoto] =
@@ -54,6 +80,68 @@ export default function CadastroAgendaLocal() {
 
   const [errorMsg, setErrorMsg] =
     useState('');
+
+  /*
+   * =====================================================
+   * CARREGAR CIDADES ATIVAS
+   * =====================================================
+   */
+
+  useEffect(() => {
+    let ativo = true;
+
+    const carregarCidades = async () => {
+      setCarregandoCidades(true);
+
+      const { data, error } = await supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true });
+
+      if (!ativo) {
+        return;
+      }
+
+      if (error) {
+        console.error(
+          'Erro ao carregar cidades:',
+          error
+        );
+
+        setCidades([]);
+      } else {
+        setCidades(
+          (data || []) as Cidade[]
+        );
+      }
+
+      setCarregandoCidades(false);
+    };
+
+    void carregarCidades();
+
+    return () => {
+      ativo = false;
+    };
+  }, [supabase]);
+
+  /*
+   * =====================================================
+   * CIDADE RECEBIDA PELA URL
+   * =====================================================
+   */
+
+  useEffect(() => {
+    if (!cidadeUrl) {
+      return;
+    }
+
+    setForm((formAtual) => ({
+      ...formAtual,
+      cidade: cidadeUrl,
+    }));
+  }, [cidadeUrl]);
 
   /*
    * =====================================================
@@ -151,7 +239,8 @@ export default function CadastroAgendaLocal() {
   const handleInputChange = (
     event: React.ChangeEvent<
       HTMLInputElement |
-      HTMLTextAreaElement
+      HTMLTextAreaElement |
+      HTMLSelectElement
     >
   ) => {
     const {
@@ -276,14 +365,30 @@ export default function CadastroAgendaLocal() {
     const descricao =
       form.descricao.trim();
 
+    const cidade =
+      form.cidade.trim();
+
     if (
       !nomeCompleto ||
       !profissao ||
       !whatsapp ||
+      !cidade ||
       !foto
     ) {
       setErrorMsg(
         'Preencha os campos obrigatórios e envie uma foto.'
+      );
+
+      return;
+    }
+
+    const cidadeValida = cidades.some(
+      (item) => item.nome === cidade
+    );
+
+    if (!cidadeValida) {
+      setErrorMsg(
+        'Selecione uma cidade válida.'
       );
 
       return;
@@ -475,6 +580,8 @@ export default function CadastroAgendaLocal() {
               descricao ||
               null,
 
+            cidade,
+
             foto_url:
               fotoUrl,
 
@@ -602,7 +709,7 @@ export default function CadastroAgendaLocal() {
 
           <p className="mt-3 text-lg text-emerald-100 md:text-xl">
             Cadastre seu serviço e apareça
-            para toda Nova União.
+            para clientes da sua cidade.
           </p>
         </div>
       </section>
@@ -627,6 +734,40 @@ export default function CadastroAgendaLocal() {
             }
             className="space-y-6"
           >
+            <div>
+              <label
+                htmlFor="cidade"
+                className="mb-2 block font-semibold text-slate-800"
+              >
+                Cidade *
+              </label>
+
+              <select
+                id="cidade"
+                name="cidade"
+                value={form.cidade}
+                onChange={handleInputChange}
+                required
+                disabled={carregandoCidades}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-4 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-100"
+              >
+                <option value="">
+                  {carregandoCidades
+                    ? 'Carregando cidades...'
+                    : 'Selecione a cidade'}
+                </option>
+
+                {cidades.map((cidade) => (
+                  <option
+                    key={cidade.id}
+                    value={cidade.nome}
+                  >
+                    {cidade.nome} - {cidade.estado}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <Campo
               label="Nome completo *"
               name="nome_completo"
@@ -792,7 +933,8 @@ export default function CadastroAgendaLocal() {
             <button
               type="submit"
               disabled={
-                loading
+                loading ||
+                carregandoCidades
               }
               className="w-full rounded-2xl bg-emerald-600 py-5 text-lg font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
@@ -846,5 +988,23 @@ function Campo({
         className="w-full rounded-2xl border border-slate-300 px-4 py-4 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
       />
     </div>
+  );
+}
+
+function CarregandoCadastroAgenda() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+
+        <p className="mt-4 font-semibold text-slate-700">
+          Carregando Agenda Local...
+        </p>
+
+        <p className="mt-1 text-sm text-slate-500">
+          Aguarde um instante.
+        </p>
+      </div>
+    </main>
   );
 }

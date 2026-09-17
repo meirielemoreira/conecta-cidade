@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 
 type Produtor = {
@@ -19,6 +20,13 @@ type Produtor = {
   data_vencimento: string | null;
   ativo: boolean;
   status: 'Ativo' | 'Aguardando' | 'Encerrado' | null;
+};
+
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
 };
 
 function obterDataAtual(): string {
@@ -47,11 +55,50 @@ function criarLinkWhatsApp(produtor: Produtor): string {
 }
 
 export default function DiretoDoProdutorPage() {
+  return (
+    <Suspense fallback={<CarregandoDiretoDoProdutor />}>
+      <DiretoDoProdutorConteudo />
+    </Suspense>
+  );
+}
+
+function DiretoDoProdutorConteudo() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const cidadeUrl = searchParams.get('cidade') || '';
+
   const [produtores, setProdutores] = useState<Produtor[]>([]);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadeSelecionada, setCidadeSelecionada] = useState(cidadeUrl);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [busca, setBusca] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('Todas');
+
+  useEffect(() => {
+    setCidadeSelecionada(cidadeUrl);
+  }, [cidadeUrl]);
+
+  useEffect(() => {
+    const carregarCidades = async () => {
+      const { data, error } = await supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao carregar cidades:', error);
+        setCidades([]);
+        return;
+      }
+
+      setCidades(data || []);
+    };
+
+    carregarCidades();
+  }, []);
 
   const carregarProdutores = useCallback(async () => {
     setCarregando(true);
@@ -59,7 +106,7 @@ export default function DiretoDoProdutorPage() {
 
     const hoje = obterDataAtual();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('direto_produtor')
       .select(
         `
@@ -83,8 +130,15 @@ export default function DiretoDoProdutorPage() {
       .eq('ativo', true)
       .eq('status', 'Ativo')
       .lte('data_inicio', hoje)
-      .gte('data_vencimento', hoje)
-      .order('created_at', { ascending: false });
+      .gte('data_vencimento', hoje);
+
+    if (cidadeSelecionada) {
+      query = query.eq('cidade', cidadeSelecionada);
+    }
+
+    const { data, error } = await query.order('created_at', {
+      ascending: false,
+    });
 
     if (error) {
       console.error('Erro ao carregar produtores:', error);
@@ -96,18 +150,39 @@ export default function DiretoDoProdutorPage() {
 
     setProdutores((data || []) as Produtor[]);
     setCarregando(false);
-  }, []);
+  }, [cidadeSelecionada]);
 
   useEffect(() => {
     carregarProdutores();
   }, [carregarProdutores]);
+
+  const alterarCidade = (novaCidade: string) => {
+    setCidadeSelecionada(novaCidade);
+
+    const parametros = new URLSearchParams(searchParams.toString());
+
+    if (novaCidade) {
+      parametros.set('cidade', novaCidade);
+    } else {
+      parametros.delete('cidade');
+    }
+
+    const queryString = parametros.toString();
+
+    router.replace(queryString ? `?${queryString}` : '?', {
+      scroll: false,
+    });
+  };
 
   const categorias = useMemo(() => {
     const lista = produtores
       .map((produtor) => produtor.categoria?.trim())
       .filter((categoria): categoria is string => Boolean(categoria));
 
-    return ['Todas', ...Array.from(new Set(lista)).sort((a, b) => a.localeCompare(b))];
+    return [
+      'Todas',
+      ...Array.from(new Set(lista)).sort((a, b) => a.localeCompare(b)),
+    ];
   }, [produtores]);
 
   const produtoresFiltrados = useMemo(() => {
@@ -154,8 +229,8 @@ export default function DiretoDoProdutorPage() {
             </p>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-100 md:text-lg">
-              Conheça produtores locais, valorize a agricultura familiar e encontre
-              alimentos, artesanato e produtos feitos em Nova União e região.
+              Conheça produtores locais, valorize a agricultura familiar e
+              encontre alimentos, artesanato e produtos feitos na sua região.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -194,7 +269,7 @@ export default function DiretoDoProdutorPage() {
               </p>
             </div>
 
-            <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-2xl">
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-3">
               <input
                 type="search"
                 value={busca}
@@ -204,8 +279,25 @@ export default function DiretoDoProdutorPage() {
               />
 
               <select
+                value={cidadeSelecionada}
+                onChange={(event) => alterarCidade(event.target.value)}
+                aria-label="Selecionar cidade"
+                className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              >
+                <option value="">Todas as cidades</option>
+
+                {cidades.map((cidade) => (
+                  <option key={cidade.id} value={cidade.nome}>
+                    {cidade.nome}
+                  </option>
+                ))}
+              </select>
+
+              <select
                 value={categoriaSelecionada}
-                onChange={(event) => setCategoriaSelecionada(event.target.value)}
+                onChange={(event) =>
+                  setCategoriaSelecionada(event.target.value)
+                }
                 className="h-12 w-full rounded-2xl border border-slate-300 bg-white px-4 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
               >
                 {categorias.map((categoria) => (
@@ -222,12 +314,18 @@ export default function DiretoDoProdutorPage() {
           {carregando ? (
             <div className="rounded-3xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
               <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-700" />
-              <p className="mt-4 font-semibold text-slate-600">Carregando produtores...</p>
+              <p className="mt-4 font-semibold text-slate-600">
+                Carregando produtores...
+              </p>
             </div>
           ) : erro ? (
             <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-16 text-center">
-              <h3 className="text-xl font-extrabold text-red-800">Não foi possível carregar</h3>
+              <h3 className="text-xl font-extrabold text-red-800">
+                Não foi possível carregar
+              </h3>
+
               <p className="mt-2 text-red-700">{erro}</p>
+
               <button
                 type="button"
                 onClick={carregarProdutores}
@@ -238,8 +336,13 @@ export default function DiretoDoProdutorPage() {
             </div>
           ) : produtoresFiltrados.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center">
-              <h3 className="text-2xl font-extrabold text-slate-800">Nenhum produtor encontrado</h3>
-              <p className="mt-3 text-slate-500">Tente alterar a pesquisa ou selecionar outra categoria.</p>
+              <h3 className="text-2xl font-extrabold text-slate-800">
+                Nenhum produtor encontrado
+              </h3>
+
+              <p className="mt-3 text-slate-500">
+                Tente alterar a pesquisa, a cidade ou selecionar outra categoria.
+              </p>
             </div>
           ) : (
             <>
@@ -265,11 +368,19 @@ export default function DiretoDoProdutorPage() {
                     >
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                         <img
-                          src={produtor.imagem_url || '/images/nova-uniao.jpg'}
+                          src={
+                            produtor.imagem_url ||
+                            '/images/nova-uniao.jpg'
+                          }
                           alt={produtor.produto}
                           onError={(event) => {
-                            if (!event.currentTarget.src.endsWith('/images/nova-uniao.jpg')) {
-                              event.currentTarget.src = '/images/nova-uniao.jpg';
+                            if (
+                              !event.currentTarget.src.endsWith(
+                                '/images/nova-uniao.jpg'
+                              )
+                            ) {
+                              event.currentTarget.src =
+                                '/images/nova-uniao.jpg';
                             }
                           }}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -283,9 +394,17 @@ export default function DiretoDoProdutorPage() {
                       </div>
 
                       <div className="flex flex-1 flex-col p-6">
-                        <h3 className="text-2xl font-extrabold text-slate-900">{produtor.produto}</h3>
-                        <p className="mt-2 font-semibold text-slate-700">{produtor.nome_produtor}</p>
-                        <p className="mt-2 text-sm font-medium text-emerald-700">{local || 'Nova União'}</p>
+                        <h3 className="text-2xl font-extrabold text-slate-900">
+                          {produtor.produto}
+                        </h3>
+
+                        <p className="mt-2 font-semibold text-slate-700">
+                          {produtor.nome_produtor}
+                        </p>
+
+                        <p className="mt-2 text-sm font-medium text-emerald-700">
+                          {local || 'Localidade não informada'}
+                        </p>
 
                         {produtor.descricao && (
                           <p className="mt-4 line-clamp-4 text-sm leading-6 text-slate-600">
@@ -317,7 +436,7 @@ export default function DiretoDoProdutorPage() {
         <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
           <div className="rounded-3xl bg-slate-900 px-6 py-10 text-center md:px-12">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-lime-300">
-              Produz em Nova União ou região?
+              Produz na sua cidade ou região?
             </p>
 
             <h2 className="mt-3 text-3xl font-extrabold text-white">
@@ -325,7 +444,8 @@ export default function DiretoDoProdutorPage() {
             </h2>
 
             <p className="mx-auto mt-4 max-w-2xl text-slate-300">
-              Participe do programa Direto do Produtor e aproxime sua produção de novos clientes.
+              Participe do programa Direto do Produtor e aproxime sua produção
+              de novos clientes.
             </p>
 
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
@@ -346,6 +466,19 @@ export default function DiretoDoProdutorPage() {
           </div>
         </div>
       </section>
+    </main>
+  );
+}
+
+function CarregandoDiretoDoProdutor() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-700" />
+        <p className="mt-4 font-semibold text-slate-700">
+          Carregando Direto do Produtor...
+        </p>
+      </div>
     </main>
   );
 }

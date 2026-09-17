@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import CarrosselCard from '../anuncios/CarrosselCard';
 
@@ -16,6 +17,13 @@ type AnuncioCategoria = {
   categoria: string | null;
   plano_usado: string | null;
   created_at: string;
+};
+
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
 };
 
 type PaginaCategoriaProps = {
@@ -41,7 +49,15 @@ function formatarPreco(preco: number | null) {
   });
 }
 
-export default function PaginaCategoria({
+export default function PaginaCategoria(props: PaginaCategoriaProps) {
+  return (
+    <Suspense fallback={<CarregandoPaginaCategoria />}>
+      <PaginaCategoriaConteudo {...props} />
+    </Suspense>
+  );
+}
+
+function PaginaCategoriaConteudo({
   titulo,
   descricao,
   categoriaBanco,
@@ -52,36 +68,75 @@ export default function PaginaCategoria({
   placeholderBusca,
   textoVazio,
 }: PaginaCategoriaProps) {
- const [anuncios, setAnuncios] = useState<AnuncioCategoria[]>([]);
-const [busca, setBusca] = useState('');
-const [ordem, setOrdem] = useState('recentes');
-const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
-  categoriaBanco
-)}`;
+  const cidadeUrl = searchParams.get('cidade') || '';
+
+  const [anuncios, setAnuncios] = useState<AnuncioCategoria[]>([]);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadeSelecionada, setCidadeSelecionada] = useState(cidadeUrl);
+  const [busca, setBusca] = useState('');
+  const [ordem, setOrdem] = useState('recentes');
+  const [loading, setLoading] = useState(true);
+
+  const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
+    categoriaBanco
+  )}`;
+
+  useEffect(() => {
+    setCidadeSelecionada(cidadeUrl);
+  }, [cidadeUrl]);
+
+  useEffect(() => {
+    const carregarCidades = async () => {
+      const { data, error } = await supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true });
+
+      if (error) {
+        console.error('Erro ao carregar cidades:', error);
+        setCidades([]);
+        return;
+      }
+
+      setCidades(data || []);
+    };
+
+    carregarCidades();
+  }, []);
+
   useEffect(() => {
     const carregarAnuncios = async () => {
       setLoading(true);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('anuncios')
         .select(`
-  id,
-  titulo,
-  nome_loja,
-  descricao,
-  preco,
-  imagens,
-  cidade,
-  categoria,
-  plano_usado,
-  created_at
-`)
+          id,
+          titulo,
+          nome_loja,
+          descricao,
+          preco,
+          imagens,
+          cidade,
+          categoria,
+          plano_usado,
+          created_at
+        `)
         .eq('categoria', categoriaBanco)
         .eq('aprovado', true)
-        .eq('ativo', true)
-        .order('created_at', { ascending: false });
+        .eq('ativo', true);
+
+      if (cidadeSelecionada) {
+        query = query.eq('cidade', cidadeSelecionada);
+      }
+
+      const { data, error } = await query.order('created_at', {
+        ascending: false,
+      });
 
       if (error) {
         console.error(`Erro ao carregar ${titulo}:`, error);
@@ -94,7 +149,25 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
     };
 
     carregarAnuncios();
-  }, [categoriaBanco, titulo]);
+  }, [categoriaBanco, titulo, cidadeSelecionada]);
+
+  const alterarCidade = (novaCidade: string) => {
+    setCidadeSelecionada(novaCidade);
+
+    const parametros = new URLSearchParams(searchParams.toString());
+
+    if (novaCidade) {
+      parametros.set('cidade', novaCidade);
+    } else {
+      parametros.delete('cidade');
+    }
+
+    const queryString = parametros.toString();
+
+    router.replace(queryString ? `?${queryString}` : '?', {
+      scroll: false,
+    });
+  };
 
   const anunciosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -113,8 +186,10 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
 
     return [...resultado].sort((a, b) => {
       if (ordem === 'menor-preco') {
-        return (a.preco ?? Number.MAX_SAFE_INTEGER) -
-          (b.preco ?? Number.MAX_SAFE_INTEGER);
+        return (
+          (a.preco ?? Number.MAX_SAFE_INTEGER) -
+          (b.preco ?? Number.MAX_SAFE_INTEGER)
+        );
       }
 
       if (ordem === 'maior-preco') {
@@ -149,10 +224,10 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
         </div>
       </section>
 
-      {/* BUSCA E ORDENAÇÃO */}
+      {/* BUSCA, CIDADE E ORDENAÇÃO */}
       <section className="max-w-7xl mx-auto px-6 -mt-7 relative z-10">
         <div className="bg-white border border-slate-200 rounded-3xl shadow-lg p-5">
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_220px] gap-4">
             <input
               type="text"
               value={busca}
@@ -160,6 +235,21 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
               placeholder={placeholderBusca}
               className="w-full border border-slate-300 rounded-2xl px-5 py-4 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500"
             />
+
+            <select
+              value={cidadeSelecionada}
+              onChange={(event) => alterarCidade(event.target.value)}
+              aria-label="Selecionar cidade"
+              className="w-full border border-slate-300 rounded-2xl px-5 py-4 bg-white focus:outline-none focus:border-orange-500"
+            >
+              <option value="">Todas as cidades</option>
+
+              {cidades.map((cidade) => (
+                <option key={cidade.id} value={cidade.nome}>
+                  {cidade.nome}
+                </option>
+              ))}
+            </select>
 
             <select
               value={ordem}
@@ -188,11 +278,11 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
           </div>
 
           <Link
-  href={linkAnunciar}
-  className="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-semibold transition"
->
-  Anunciar nesta categoria
-</Link>
+            href={linkAnunciar}
+            className="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-xl font-semibold transition"
+          >
+            Anunciar nesta categoria
+          </Link>
         </div>
 
         {loading ? (
@@ -210,16 +300,15 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
             </p>
 
             <Link
-  href={linkAnunciar}
-  className="inline-block mt-6 bg-orange-600 hover:bg-orange-700 text-white px-7 py-3 rounded-xl font-semibold transition"
->
-  Publicar anúncio
-</Link>
+              href={linkAnunciar}
+              className="inline-block mt-6 bg-orange-600 hover:bg-orange-700 text-white px-7 py-3 rounded-xl font-semibold transition"
+            >
+              Publicar anúncio
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {anunciosFiltrados.map((anuncio) => {
-
               const preco = formatarPreco(anuncio.preco);
 
               return (
@@ -227,21 +316,21 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
                   key={anuncio.id}
                   className="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
-<div className="relative h-52 overflow-hidden bg-slate-100">
-  <CarrosselCard
-    imagens={anuncio.imagens}
-    titulo={anuncio.titulo}
-    plano={anuncio.plano_usado}
-  />
+                  <div className="relative h-52 overflow-hidden bg-slate-100">
+                    <CarrosselCard
+                      imagens={anuncio.imagens}
+                      titulo={anuncio.titulo}
+                      plano={anuncio.plano_usado}
+                    />
 
-  <Link
-    href={`/anuncio/${anuncio.id}`}
-    aria-label={`Abrir anúncio: ${anuncio.titulo}`}
-    className="absolute inset-0 z-[5]"
-  />
-</div>
+                    <Link
+                      href={`/anuncio/${anuncio.id}`}
+                      aria-label={`Abrir anúncio: ${anuncio.titulo}`}
+                      className="absolute inset-0 z-[5]"
+                    />
+                  </div>
 
-<div className="p-5">
+                  <div className="p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide text-orange-600 line-clamp-1">
                       {anuncio.nome_loja || titulo}
                     </p>
@@ -259,14 +348,15 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
                     )}
 
                     <p className="text-sm text-slate-500 mt-3">
-                      {anuncio.cidade || 'Nova União'} • MG
+                      {anuncio.cidade || 'Cidade não informada'} • MG
                     </p>
-<Link
-  href={`/anuncio/${anuncio.id}`}
-  className="mt-4 inline-flex items-center font-semibold text-orange-600 transition hover:text-orange-700"
->
-  Ver anúncio completo →
-</Link>
+
+                    <Link
+                      href={`/anuncio/${anuncio.id}`}
+                      className="mt-4 inline-flex items-center font-semibold text-orange-600 transition hover:text-orange-700"
+                    >
+                      Ver anúncio completo →
+                    </Link>
                   </div>
                 </article>
               );
@@ -274,6 +364,19 @@ const linkAnunciar = `/anunciar?categoria=${encodeURIComponent(
           </div>
         )}
       </section>
+    </main>
+  );
+}
+
+function CarregandoPaginaCategoria() {
+  return (
+    <main className="flex min-h-[70vh] items-center justify-center bg-slate-50 px-6">
+      <div className="text-center">
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-600" />
+        <p className="mt-4 font-semibold text-slate-700">
+          Carregando anúncios...
+        </p>
+      </div>
     </main>
   );
 }

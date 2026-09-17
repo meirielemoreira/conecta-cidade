@@ -2,21 +2,23 @@ import type { Metadata } from 'next';
 import PaginaCategoria from '../../components/categorias/PaginaCategoria';
 
 export const metadata: Metadata = {
-  title: 'Onde é o Rolê? em Nova União MG',
+  title: 'Onde é o Rolê? | Conecta Cidade',
 
   description:
-    'Encontre festas, shows, eventos, gastronomia e opções de lazer em Nova União/MG no Conecta Cidade.',
+    'Encontre festas, shows, eventos, gastronomia e opções de lazer nas cidades atendidas pelo Conecta Cidade.',
 
   keywords: [
-    'eventos Nova União MG',
-    'festas Nova União MG',
-    'shows Nova União MG',
-    'onde ir Nova União MG',
-    'lazer Nova União MG',
-    'gastronomia Nova União MG',
-    'restaurantes Nova União MG',
-    'agenda de eventos Nova União',
-    'Onde é o Rolê Nova União',
+    'eventos',
+    'festas',
+    'shows',
+    'onde ir',
+    'lazer',
+    'gastronomia',
+    'restaurantes',
+    'agenda de eventos',
+    'eventos Minas Gerais',
+    'Onde é o Rolê',
+    'Conecta Cidade',
   ],
 
   alternates: {
@@ -24,9 +26,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Onde é o Rolê? em Nova União MG',
+    title: 'Onde é o Rolê? | Conecta Cidade',
     description:
-      'Festas, shows, eventos, gastronomia e opções de lazer em Nova União/MG.',
+      'Festas, shows, eventos, gastronomia e opções de lazer na sua cidade.',
     type: 'website',
     locale: 'pt_BR',
   },

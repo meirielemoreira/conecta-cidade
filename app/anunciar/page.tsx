@@ -29,6 +29,12 @@ type Categoria = {
   slug: string;
 };
 
+type Cidade = {
+  id: string;
+  nome: string;
+  estado: string;
+};
+
 type Plano = {
   nome: string;
   preco: string;
@@ -61,6 +67,7 @@ type FormularioAnuncio = {
   preco: string;
   instagram: string;
   categoria: string;
+  cidade: string;
 };
 
 type DimensoesImagem = {
@@ -178,6 +185,12 @@ function AnunciarConteudo() {
   const [categorias, setCategorias] =
     useState<Categoria[]>([]);
 
+  const [cidades, setCidades] =
+    useState<Cidade[]>([]);
+
+  const [loadingCidades, setLoadingCidades] =
+    useState(true);
+
   const [
     loadingCategorias,
     setLoadingCategorias,
@@ -214,6 +227,7 @@ function AnunciarConteudo() {
       preco: '',
       instagram: '',
       categoria: '',
+      cidade: '',
     });
 
   const planos: Plano[] = [
@@ -468,6 +482,52 @@ buttonClass:
   }, [supabase]);
 
   /* =======================================================
+     CARREGAR CIDADES ATIVAS
+  ======================================================= */
+
+  useEffect(() => {
+    let componenteAtivo = true;
+
+    const carregarCidades = async () => {
+      setLoadingCidades(true);
+
+      const { data, error } =
+        await supabase
+          .from('cidades')
+          .select('id, nome, estado')
+          .eq('ativa', true)
+          .order('nome', {
+            ascending: true,
+          });
+
+      if (!componenteAtivo) {
+        return;
+      }
+
+      if (error) {
+        console.error(
+          'Erro ao carregar cidades:',
+          error
+        );
+
+        setErrorMsg(
+          'Não foi possível carregar as cidades.'
+        );
+      } else {
+        setCidades((data || []) as Cidade[]);
+      }
+
+      setLoadingCidades(false);
+    };
+
+    carregarCidades();
+
+    return () => {
+      componenteAtivo = false;
+    };
+  }, [supabase]);
+
+  /* =======================================================
      PLANO E CATEGORIA RECEBIDOS PELA URL
   ======================================================= */
 
@@ -497,6 +557,16 @@ buttonClass:
       setForm((formAtual) => ({
         ...formAtual,
         categoria: categoriaUrl,
+      }));
+    }
+
+    const cidadeUrl =
+      searchParams.get('cidade');
+
+    if (cidadeUrl) {
+      setForm((formAtual) => ({
+        ...formAtual,
+        cidade: cidadeUrl,
       }));
     }
   }, [searchParams]);
@@ -980,6 +1050,28 @@ buttonClass:
       return;
     }
 
+    if (!form.cidade) {
+      setErrorMsg(
+        'Selecione a cidade onde deseja anunciar.'
+      );
+
+      return;
+    }
+
+    const cidadeSelecionada =
+      cidades.find(
+        (cidade) =>
+          cidade.nome === form.cidade
+      );
+
+    if (!cidadeSelecionada) {
+      setErrorMsg(
+        'Selecione uma cidade válida.'
+      );
+
+      return;
+    }
+
     if (!form.nome.trim()) {
       setErrorMsg(
         'Informe seu nome.'
@@ -1132,12 +1224,10 @@ buttonClass:
             imagens: imageUrls,
 
             cidade:
-              profile.cidade ||
-              'Nova União',
+              cidadeSelecionada.nome,
 
             estado:
-              profile.estado ||
-              'MG',
+              cidadeSelecionada.estado,
 
             plano_usado:
               planoSelecionado,
@@ -1231,7 +1321,7 @@ buttonClass:
           </div>
 
           <h1 className="mt-4 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
-            Anuncie grátis em Nova União
+            Anuncie grátis na sua cidade
           </h1>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
@@ -1291,7 +1381,7 @@ buttonClass:
       <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 py-4 text-white shadow-md md:py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 text-center">
           <h1 className="mx-auto w-full max-w-6xl text-center text-2xl font-extrabold uppercase leading-tight tracking-tight md:text-5xl">
-            Impulsione seu negócio em Nova União!
+            Impulsione seu negócio na sua cidade!
           </h1>
 
           <p className="mx-auto mt-1.5 w-full max-w-4xl text-center text-[11px] font-medium uppercase leading-relaxed tracking-wide text-slate-300 md:mt-2 md:text-base">
@@ -1550,6 +1640,44 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
 
                   <p className="mt-1.5 text-xs text-slate-500">
                     Disponível para Morar & Construir, Motores & Rodas, Promoções e Onde é o Rolê?.
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="cidade"
+                    className="mb-1.5 block text-sm font-semibold text-slate-700"
+                  >
+                    Cidade onde deseja anunciar *
+                  </label>
+
+                  <select
+                    id="cidade"
+                    name="cidade"
+                    value={form.cidade}
+                    onChange={handleChange}
+                    required
+                    disabled={loadingCidades}
+                    className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 disabled:bg-slate-100"
+                  >
+                    <option value="">
+                      {loadingCidades
+                        ? 'Carregando cidades...'
+                        : 'Selecione a cidade'}
+                    </option>
+
+                    {cidades.map((cidade) => (
+                      <option
+                        key={cidade.id}
+                        value={cidade.nome}
+                      >
+                        {cidade.nome} - {cidade.estado}
+                      </option>
+                    ))}
+                  </select>
+
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Escolha a cidade onde este anúncio deverá aparecer.
                   </p>
                 </div>
 

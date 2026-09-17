@@ -20,10 +20,10 @@ export default function Footer() {
               aria-label="Ir para a página inicial"
             >
               <img
-  src="/conecta-cidade-app.png"
-  alt="Conecta Cidade"
-  className="w-12 h-12 rounded-2xl object-cover shadow-md"
-/>
+                src="/conecta-cidade-app.png"
+                alt="Conecta Cidade"
+                className="w-12 h-12 rounded-2xl object-cover shadow-md"
+              />
 
               <div>
                 <p className="text-xl font-extrabold text-slate-900 leading-tight">
@@ -31,7 +31,7 @@ export default function Footer() {
                 </p>
 
                 <p className="text-sm text-slate-500">
-                  Nova União • MG
+                  A cidade, conectada.
                 </p>
               </div>
             </Link>
@@ -94,7 +94,7 @@ export default function Footer() {
               </FooterLink>
 
               <FooterLink href="/nova-uniao-informa">
-                Nova União Informa
+                Informa Cidade
               </FooterLink>
 
               <FooterLink href="/agenda-local">
@@ -127,7 +127,7 @@ export default function Footer() {
               </FooterLink>
 
               <p className="leading-relaxed mt-2 max-w-xs">
-                Divulgue sua empresa e alcance mais clientes em Nova União.
+                Divulgue sua empresa e alcance mais clientes na sua cidade.
               </p>
 
               <Link
@@ -170,7 +170,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-pink-600 transition mt-4"
             >
               <InstagramIcon className="w-4 h-4" />
-             @portal.conectacidade
+              @portal.conectacidade
             </a>
           </div>
         </div>
@@ -181,26 +181,26 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
 
           <p className="text-center md:text-left">
-            © {anoAtual} Conecta Cidade — Nova União • MG.
-            Todos os direitos reservados.
+            © {anoAtual} Conecta Cidade. Todos os direitos reservados.
           </p>
-<div className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-medium">
-  <Link href="/termos" className="hover:text-orange-600 transition">
-    Termos de uso
-  </Link>
 
-  <Link href="/privacidade" className="hover:text-orange-600 transition">
-    Privacidade
-  </Link>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-medium">
+            <Link href="/termos" className="hover:text-orange-600 transition">
+              Termos de uso
+            </Link>
 
-  <Link href="/contato" className="hover:text-orange-600 transition">
-    Contato
-  </Link>
+            <Link href="/privacidade" className="hover:text-orange-600 transition">
+              Privacidade
+            </Link>
 
-  <Link href="/planos" className="hover:text-orange-600 transition">
-    Planos
-  </Link>
-</div>
+            <Link href="/contato" className="hover:text-orange-600 transition">
+              Contato
+            </Link>
+
+            <Link href="/planos" className="hover:text-orange-600 transition">
+              Planos
+            </Link>
+          </div>
         </div>
       </section>
     </footer>
