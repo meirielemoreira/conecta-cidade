@@ -9,6 +9,13 @@ type Categoria = {
   slug: string;
 };
 
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
+};
+
 type Anuncio = {
   id: string;
   titulo: string;
@@ -135,8 +142,10 @@ function formatarData(valor?: string | null) {
 export default function AnunciosAdmin() {
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState('todos');
+  const [filtroCidade, setFiltroCidade] = useState('todas');
   const [busca, setBusca] = useState('');
 
   const [mostrarNovoAnuncio, setMostrarNovoAnuncio] = useState(false);
@@ -153,13 +162,18 @@ export default function AnunciosAdmin() {
   const carregarDados = async () => {
     setLoading(true);
 
-    const [resAnuncios, resCategorias] = await Promise.all([
+    const [resAnuncios, resCategorias, resCidades] = await Promise.all([
       supabase.from('anuncios').select('*').order('created_at', { ascending: false }),
       supabase
         .from('categorias')
         .select('id, nome, slug')
         .eq('ativa', true)
         .order('ordem', { ascending: true }),
+      supabase
+        .from('cidades')
+        .select('id, nome, slug, estado')
+        .eq('ativa', true)
+        .order('nome', { ascending: true }),
     ]);
 
     if (resAnuncios.error) {
@@ -173,6 +187,13 @@ export default function AnunciosAdmin() {
       console.error('Erro ao carregar categorias:', resCategorias.error);
     } else {
       setCategorias(resCategorias.data || []);
+    }
+
+    if (resCidades.error) {
+      console.error('Erro ao carregar cidades:', resCidades.error);
+      setCidades([]);
+    } else {
+      setCidades((resCidades.data || []) as Cidade[]);
     }
 
     setLoading(false);
@@ -197,16 +218,20 @@ export default function AnunciosAdmin() {
         anuncio.status === filtroStatus ||
         (filtroStatus === 'aprovado' && anuncio.aprovado);
 
+      const correspondeCidade =
+        filtroCidade === 'todas' || anuncio.cidade === filtroCidade;
+
       const correspondeBusca =
         !termo ||
         anuncio.titulo?.toLowerCase().includes(termo) ||
         anuncio.nome_loja?.toLowerCase().includes(termo) ||
         anuncio.telefone?.toLowerCase().includes(termo) ||
-        anuncio.categoria?.toLowerCase().includes(termo);
+        anuncio.categoria?.toLowerCase().includes(termo) ||
+        anuncio.cidade?.toLowerCase().includes(termo);
 
-      return correspondeStatus && correspondeBusca;
+      return correspondeStatus && correspondeCidade && correspondeBusca;
     });
-  }, [anuncios, busca, filtroStatus]);
+  }, [anuncios, busca, filtroStatus, filtroCidade]);
 
   const enviarImagem = async (arquivo: File, pasta: string): Promise<string> => {
     const extensao = arquivo.name.split('.').pop()?.toLowerCase() || 'jpg';
@@ -349,8 +374,14 @@ export default function AnunciosAdmin() {
 };
 
   const criarAnuncioManual = async () => {
-    if (!novoAnuncio.titulo.trim() || !novoAnuncio.nome_loja.trim() || !novoAnuncio.categoria) {
-      alert('Preencha título, anunciante e categoria.');
+    if (!novoAnuncio.titulo.trim() || !novoAnuncio.nome_loja.trim() || !novoAnuncio.categoria || !novoAnuncio.cidade) {
+      alert('Preencha título, anunciante, categoria e cidade.');
+      return;
+    }
+
+    const cidadeOficial = cidades.find((cidade) => cidade.nome === novoAnuncio.cidade);
+    if (!cidadeOficial) {
+      alert('Selecione uma cidade válida.');
       return;
     }
 
@@ -381,8 +412,8 @@ export default function AnunciosAdmin() {
           descricao: novoAnuncio.descricao.trim() || null,
           preco: normalizarPreco(novoAnuncio.preco),
           categoria: novoAnuncio.categoria,
-          cidade: novoAnuncio.cidade.trim() || 'Nova União',
-          estado: novoAnuncio.estado.trim() || 'MG',
+          cidade: cidadeOficial.nome,
+          estado: cidadeOficial.estado,
           imagens: imagemUrl ? [imagemUrl] : [],
           plano_usado: novoAnuncio.plano_usado,
           payment_status: novoAnuncio.payment_status,
@@ -433,6 +464,12 @@ export default function AnunciosAdmin() {
       return;
     }
 
+    const cidadeOficial = cidades.find((cidade) => cidade.nome === anuncioEditando.cidade);
+    if (!cidadeOficial) {
+      alert('Selecione uma cidade válida.');
+      return;
+    }
+
     setSalvandoEdicao(true);
 
     try {
@@ -461,8 +498,8 @@ export default function AnunciosAdmin() {
           preco: normalizarPreco(precoEdicao),
           categoria: anuncioEditando.categoria || null,
           tipo: tipoPelaCategoria(anuncioEditando.categoria || ''),
-          cidade: anuncioEditando.cidade?.trim() || 'Nova União',
-          estado: anuncioEditando.estado?.trim() || 'MG',
+          cidade: cidadeOficial.nome,
+          estado: cidadeOficial.estado,
           plano_usado: anuncioEditando.plano_usado,
           payment_status: anuncioEditando.payment_status,
           status,
@@ -512,14 +549,25 @@ export default function AnunciosAdmin() {
       </div>
 
       <div className="bg-white border rounded-3xl p-5 mb-6">
-        <div className="grid md:grid-cols-[1fr_220px_auto] gap-4">
+        <div className="grid md:grid-cols-[1fr_200px_220px_auto] gap-4">
           <input
             type="search"
             value={busca}
             onChange={(event) => setBusca(event.target.value)}
-            placeholder="Pesquisar anúncio, anunciante, telefone ou categoria..."
+            placeholder="Pesquisar anúncio, anunciante, telefone, categoria ou cidade..."
             className="border border-slate-300 rounded-2xl px-4 py-3"
           />
+
+          <select
+            value={filtroCidade}
+            onChange={(event) => setFiltroCidade(event.target.value)}
+            className="border border-slate-300 rounded-2xl px-4 py-3 bg-white"
+          >
+            <option value="todas">Todas as cidades</option>
+            {cidades.map((cidade) => (
+              <option key={cidade.id} value={cidade.nome}>{cidade.nome}</option>
+            ))}
+          </select>
 
           <select
             value={filtroStatus}
@@ -566,8 +614,11 @@ export default function AnunciosAdmin() {
             <SelecaoAdmin label="Categoria *" value={novoAnuncio.categoria} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, categoria: valor })} options={categorias.map((categoria) => ({ value: categoria.nome, label: categoria.nome }))} placeholder="Selecione a categoria" />
             <SelecaoAdmin label="Plano" value={novoAnuncio.plano_usado} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, plano_usado: valor })} options={planos.map((plano) => ({ value: plano, label: plano }))} />
             <SelecaoAdmin label="Pagamento" value={novoAnuncio.payment_status} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, payment_status: valor })} options={pagamentos.map((pagamento) => ({ value: pagamento, label: pagamento }))} />
-            <CampoAdmin label="Cidade" value={novoAnuncio.cidade} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, cidade: valor })} />
-            <CampoAdmin label="Estado" value={novoAnuncio.estado} onChange={(valor) => setNovoAnuncio({ ...novoAnuncio, estado: valor })} />
+            <SelecaoAdmin label="Cidade *" value={novoAnuncio.cidade} onChange={(valor) => {
+              const cidade = cidades.find((item) => item.nome === valor);
+              setNovoAnuncio({ ...novoAnuncio, cidade: valor, estado: cidade?.estado || '' });
+            }} options={cidades.map((cidade) => ({ value: cidade.nome, label: `${cidade.nome} • ${cidade.estado}` }))} placeholder="Selecione a cidade" />
+            <CampoSomenteLeitura label="Estado" value={novoAnuncio.estado} />
 
             <div>
               <label className="block font-medium mb-2">Foto</label>
@@ -700,8 +751,11 @@ export default function AnunciosAdmin() {
               <CampoAdmin label="Telefone" value={anuncioEditando.telefone || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, telefone: valor })} />
               <CampoAdmin label="E-mail" type="email" value={anuncioEditando.email || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, email: valor })} />
               <CampoAdmin label="Instagram" value={anuncioEditando.instagram || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, instagram: valor })} />
-              <CampoAdmin label="Cidade" value={anuncioEditando.cidade || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, cidade: valor })} />
-              <CampoAdmin label="Estado" value={anuncioEditando.estado || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, estado: valor })} />
+              <SelecaoAdmin label="Cidade" value={anuncioEditando.cidade || ''} onChange={(valor) => {
+                const cidade = cidades.find((item) => item.nome === valor);
+                setAnuncioEditando({ ...anuncioEditando, cidade: valor, estado: cidade?.estado || '' });
+              }} options={cidades.map((cidade) => ({ value: cidade.nome, label: `${cidade.nome} • ${cidade.estado}` }))} placeholder="Selecione a cidade" />
+              <CampoSomenteLeitura label="Estado" value={anuncioEditando.estado || ''} />
               <SelecaoAdmin label="Plano" value={anuncioEditando.plano_usado || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, plano_usado: valor })} options={planos.map((plano) => ({ value: plano, label: plano }))} />
               <SelecaoAdmin label="Pagamento" value={anuncioEditando.payment_status || ''} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, payment_status: valor })} options={pagamentos.map((pagamento) => ({ value: pagamento, label: pagamento }))} />
               <SelecaoAdmin label="Status" value={anuncioEditando.status || 'pendente'} onChange={(valor) => setAnuncioEditando({ ...anuncioEditando, status: valor })} options={estadosAnuncio.map((status) => ({ value: status, label: status }))} />
@@ -774,6 +828,10 @@ function Status({ status }: { status: string }) {
 
 function CampoAdmin({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (valor: string) => void; type?: string }) {
   return <div><label className="block font-medium mb-2">{label}</label><input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="w-full border border-slate-300 rounded-2xl px-4 py-3" /></div>;
+}
+
+function CampoSomenteLeitura({ label, value }: { label: string; value: string }) {
+  return <div><label className="block font-medium mb-2">{label}</label><input type="text" value={value} readOnly className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-100 text-slate-600" /></div>;
 }
 
 function SelecaoAdmin({ label, value, onChange, options, placeholder }: { label: string; value: string; onChange: (valor: string) => void; options: Array<{ value: string; label: string }>; placeholder?: string }) {
