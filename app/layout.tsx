@@ -6,26 +6,29 @@ import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Conecta Cidade - Nova União",
+    default: "Portal Conecta Cidade",
     template: "%s | Conecta Cidade",
   },
 
   description:
-    "Portal comercial e informativo de Nova União/MG. Encontre anúncios, profissionais, serviços, agenda local, produtores, promoções, eventos e informações da cidade.",
+    "Empresas, imóveis, veículos, promoções, serviços, eventos e informações da sua cidade e região em um só lugar.",
 
   keywords: [
-    "Nova União MG",
+    "Portal Conecta Cidade",
     "Conecta Cidade",
-    "anúncios Nova União",
-    "classificados Nova União MG",
-    "serviços Nova União",
-    "profissionais Nova União",
-    "empresas Nova União MG",
-    "Agenda Local Nova União",
-    "Direto do Produtor Nova União",
-    "promoções Nova União MG",
-    "eventos Nova União MG",
-    "comércio Nova União MG",
+    "anúncios locais",
+    "classificados",
+    "empresas locais",
+    "serviços locais",
+    "profissionais",
+    "Agenda Local",
+    "Direto do Produtor",
+    "promoções",
+    "eventos",
+    "imóveis",
+    "veículos",
+    "comércio local",
+    "Minas Gerais",
   ],
 
   authors: [
@@ -70,16 +73,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "pt_BR",
     siteName: "Conecta Cidade",
-    title: "Conecta Cidade - Nova União",
+    title: "Portal Conecta Cidade",
     description:
-      "Anúncios, empresas, profissionais, serviços, produtores, promoções, eventos e informações de Nova União/MG.",
+      "Empresas, imóveis, veículos, promoções, serviços, eventos e informações da sua cidade e região em um só lugar.",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Conecta Cidade - Nova União",
+    title: "Portal Conecta Cidade",
     description:
-      "Portal comercial e informativo de Nova União/MG.",
+      "Empresas, imóveis, veículos, promoções, serviços, eventos e informações da sua cidade e região em um só lugar.",
   },
 
   formatDetection: {
