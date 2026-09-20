@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Administração',
+  title: 'Conecta Cidade Admin',
+
+  manifest: '/admin/manifest',
+
   robots: {
     index: false,
     follow: false,
