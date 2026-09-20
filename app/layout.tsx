@@ -5,6 +5,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://portalconectacidade.com.br"),
+
   title: {
     default: "Portal Conecta Cidade",
     template: "%s | Conecta Cidade",
