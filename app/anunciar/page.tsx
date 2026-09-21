@@ -2025,7 +2025,7 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
               </div>
 
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Espaço destinado a pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos de Nova União e região.
+                Espaço destinado a pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos da sua cidade e região.
               </p>
 
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">

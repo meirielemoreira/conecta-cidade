@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'Direto do Produtor | Conecta Cidade',
 
   description:
-    'Encontre produtores locais, alimentos, artesanato e produtos da agricultura familiar no Conecta Cidade.',
+  'Encontre produtores locais, alimentos, artesanato e produtos da agricultura familiar no Portal Conecta Cidade.',
 
   keywords: [
     'Direto do Produtor',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     'produtos locais',
     'produtores rurais',
     'produtores Minas Gerais',
-    'Conecta Cidade',
+    'Portal Conecta Cidade',
   ],
 
   alternates: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Direto do Produtor | Conecta Cidade',
+    title: 'Direto do Produtor | Portal Conecta Cidade',
     description:
       'Conheça produtores locais e encontre alimentos, artesanato e produtos da agricultura familiar.',
     type: 'website',

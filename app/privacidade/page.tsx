@@ -5,16 +5,16 @@ export const metadata: Metadata = {
   title: 'Política de Privacidade',
 
   description:
-    'Conheça a Política de Privacidade do Conecta Cidade e saiba como os dados pessoais dos usuários são coletados, utilizados, armazenados e protegidos.',
+    'Conheça a Política de Privacidade do Portal Conecta Cidade e saiba como os dados pessoais dos usuários são coletados, utilizados, armazenados e protegidos.',
 
   alternates: {
     canonical: '/privacidade',
   },
 
   openGraph: {
-    title: 'Política de Privacidade | Conecta Cidade',
+    title: 'Política de Privacidade | Portal Conecta Cidade',
     description:
-      'Saiba como o Conecta Cidade trata e protege os dados pessoais dos usuários do portal.',
+      'Saiba como o Portal Conecta Cidade trata e protege os dados pessoais dos usuários do portal.',
     type: 'website',
     locale: 'pt_BR',
   },
@@ -429,7 +429,7 @@ export default function PrivacidadePage() {
               </p>
 
               <p className="mt-4 font-semibold text-slate-900">
-                Conecta Cidade — Nova União • MG
+                Portal Conecta Cidade — A cidade, conectada.
               </p>
 
               <a

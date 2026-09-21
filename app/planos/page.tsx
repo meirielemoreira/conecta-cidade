@@ -2,20 +2,22 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Planos para Anunciar em Nova União MG',
+  title: 'Planos para Anunciar na Sua Cidade | Portal Conecta Cidade',
 
   description:
-    'Conheça os planos do Conecta Cidade para divulgar anúncios, empresas, profissionais, serviços e produtores em Nova União/MG.',
+    'Conheça os planos do Portal Conecta Cidade para divulgar negócios, serviços, produtos e anúncios locais na sua cidade.',
 
   keywords: [
-    'anunciar em Nova União MG',
-    'anúncios Nova União MG',
-    'divulgar empresa Nova União',
-    'divulgar serviço Nova União MG',
-    'publicidade Nova União MG',
-    'planos Conecta Cidade',
-    'Agenda Local Nova União',
-    'Direto do Produtor Nova União',
+    'anunciar na minha cidade',
+    'divulgar meu negócio local',
+    'anunciar minha empresa',
+    'divulgar meus serviços',
+    'publicidade para comércio local',
+    'anúncios para empresas',
+    'divulgação de negócios locais',
+    'planos Portal Conecta Cidade',
+    'Agenda Local',
+    'Direto do Produtor',
   ],
 
   alternates: {
@@ -23,9 +25,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Planos para Anunciar em Nova União MG',
+    title: 'Planos para Anunciar na Sua Cidade | Portal Conecta Cidade',
     description:
-      'Escolha uma opção para divulgar seu negócio, serviço, produto ou anúncio no Conecta Cidade.',
+      'Escolha uma opção para divulgar seu negócio, serviço, produto ou anúncio local no Portal Conecta Cidade.',
     type: 'website',
     locale: 'pt_BR',
   },
@@ -43,8 +45,8 @@ export default function PlanosPage() {
           </span>
 
           <h1 className="mb-2 text-3xl font-extrabold leading-tight text-slate-900 md:mb-4 md:text-5xl">
-            Divulgue seu negócio em Nova União
-          </h1>
+  Divulgue seu negócio na sua cidade
+</h1>
 
           <p className="mx-auto max-w-3xl text-sm leading-relaxed text-slate-600 md:hidden">
             Escolha o plano ideal e apareça para mais pessoas na sua cidade.

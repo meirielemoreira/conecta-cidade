@@ -12,9 +12,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Termos de Uso | Conecta Cidade',
-    description:
-      'Conheça as regras e condições para utilização do portal Conecta Cidade de Nova União/MG.',
+    title: 'Termos de Uso | Portal Conecta Cidade',
+description:
+  'Conheça as regras e condições para utilização do Portal Conecta Cidade.',
     type: 'website',
     locale: 'pt_BR',
   },
@@ -508,7 +508,7 @@ export default function TermosPage() {
               </p>
 
               <p className="mt-4 font-semibold text-slate-900">
-                Conecta Cidade — Nova União • MG
+                Portal Conecta Cidade — A cidade, conectada.
               </p>
 
               <a

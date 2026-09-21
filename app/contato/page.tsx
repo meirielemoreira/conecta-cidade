@@ -3,22 +3,21 @@ import Link from 'next/link';
 
 const TELEFONE_CONECTA = '31984949887';
 const TELEFONE_EXIBICAO = '(31) 98494-9887';
-const INSTAGRAM_URL = 'https://instagram.com/conecta.novauniao';
-const INSTAGRAM_USUARIO = '@conecta.novauniao';
-
+const INSTAGRAM_URL = 'https://instagram.com/portal.conectacidade';
+const INSTAGRAM_USUARIO = '@portal.conectacidade';
 export const metadata: Metadata = {
-  title: 'Contato',
+  title: 'Contato | Portal Conecta Cidade',
 
   description:
-    'Entre em contato com o Conecta Cidade de Nova União/MG para dúvidas, suporte, anúncios, planos, Agenda Local e atendimento comercial.',
+    'Entre em contato com o Portal Conecta Cidade para dúvidas, suporte, anúncios, planos, Agenda Local e atendimento comercial.',
 
   keywords: [
-    'contato Conecta Cidade',
-    'Conecta Cidade Nova União',
-    'contato Nova União MG',
-    'anunciar Nova União MG',
-    'suporte Conecta Cidade',
-    'Agenda Local Nova União',
+    'contato Portal Conecta Cidade',
+    'suporte Portal Conecta Cidade',
+    'anunciar na minha cidade',
+    'divulgar meu negócio local',
+    'Agenda Local',
+    'Portal Conecta Cidade',
   ],
 
   alternates: {
@@ -26,9 +25,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Contato | Conecta Cidade',
+    title: 'Contato | Portal Conecta Cidade',
     description:
-      'Fale com o Conecta Cidade para dúvidas, suporte, anúncios, planos e atendimento em Nova União/MG.',
+      'Fale com o Portal Conecta Cidade para dúvidas, suporte, anúncios, planos e atendimento comercial.',
     type: 'website',
     locale: 'pt_BR',
   },
