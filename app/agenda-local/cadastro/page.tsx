@@ -820,18 +820,17 @@ function CadastroAgendaLocal() {
               placeholder="@seuperfil"
             />
 
-            <Campo
-              label="Endereço"
-              name="endereco"
-              value={
-                form.endereco
-              }
-              onChange={
-                handleInputChange
-              }
-              placeholder="Rua, bairro ou ponto de referência"
-            />
-
+           <Campo
+  label="Bairro / Localidade"
+  name="endereco"
+  value={
+    form.endereco
+  }
+  onChange={
+    handleInputChange
+  }
+  placeholder="Ex.: Centro, bairro, comunidade ou zona rural"
+/>
             <div>
               <label
                 htmlFor="descricao"

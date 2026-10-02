@@ -16,6 +16,14 @@ type AgendaItem = {
   aprovado: boolean;
   data_expiracao: string;
   data_cadastro: string;
+  cidade?: string | null;
+  endereco?: string | null;
+};
+type Cidade = {
+  id: string;
+  nome: string;
+  slug: string;
+  estado: string;
 };
 
 type ContatoUtil = {
@@ -36,6 +44,8 @@ type FiltroAgenda =
   | 'expirado';
 
 const cadastroInicial = {
+  cidade: '',
+  endereco: '',
   nome_completo: '',
   profissao: '',
   whatsapp: '',
@@ -94,8 +104,9 @@ function abrirWhatsApp(item: AgendaItem) {
 
 export default function AgendaAdmin() {
   const [agendaItems, setAgendaItems] = useState<AgendaItem[]>([]);
-  const [contatosUteis, setContatosUteis] = useState<ContatoUtil[]>([]);
-  const [loading, setLoading] = useState(true);
+const [contatosUteis, setContatosUteis] = useState<ContatoUtil[]>([]);
+const [cidades, setCidades] = useState<Cidade[]>([]);
+const [loading, setLoading] = useState(true);
   const [loadingContatos, setLoadingContatos] = useState(true);
 
   const [mostrarNovoCadastro, setMostrarNovoCadastro] = useState(false);
@@ -155,8 +166,28 @@ export default function AgendaAdmin() {
     setLoadingContatos(false);
   };
 
+  const carregarCidades = async () => {
+    const { data, error } = await supabase
+      .from('cidades')
+      .select('id, nome, slug, estado')
+      .eq('ativa', true)
+      .order('nome', { ascending: true });
+
+    if (error) {
+      console.error('Erro ao carregar cidades:', error);
+      setCidades([]);
+      return;
+    }
+
+    setCidades((data || []) as Cidade[]);
+  };
+
   const carregarTudo = async () => {
-    await Promise.all([carregarAgenda(), carregarContatosUteis()]);
+    await Promise.all([
+      carregarAgenda(),
+      carregarContatosUteis(),
+      carregarCidades(),
+    ]);
   };
 
   useEffect(() => {
@@ -250,11 +281,22 @@ export default function AgendaAdmin() {
 
   const criarCadastroManual = async () => {
     if (
+      !novoCadastro.cidade.trim() ||
+      !novoCadastro.endereco.trim() ||
       !novoCadastro.nome_completo.trim() ||
       !novoCadastro.profissao.trim() ||
       !novoCadastro.whatsapp.trim()
     ) {
-      alert('Preencha nome, profissão e WhatsApp.');
+      alert('Preencha cidade, bairro/localidade, nome, profissão e WhatsApp.');
+      return;
+    }
+
+    const cidadeValida = cidades.some(
+      (cidade) => cidade.nome === novoCadastro.cidade
+    );
+
+    if (!cidadeValida) {
+      alert('Selecione uma cidade válida.');
       return;
     }
 
@@ -272,6 +314,8 @@ export default function AgendaAdmin() {
 
       const { error } = await supabase.from('agenda_local').insert([
         {
+          cidade: novoCadastro.cidade.trim(),
+          endereco: novoCadastro.endereco.trim(),
           nome_completo: novoCadastro.nome_completo.trim(),
           profissao: novoCadastro.profissao.trim(),
           whatsapp: novoCadastro.whatsapp.trim(),
@@ -316,11 +360,22 @@ export default function AgendaAdmin() {
     if (!itemEditando) return;
 
     if (
+      !itemEditando.cidade?.trim() ||
+      !itemEditando.endereco?.trim() ||
       !itemEditando.nome_completo.trim() ||
       !itemEditando.profissao.trim() ||
       !itemEditando.whatsapp.trim()
     ) {
-      alert('Preencha nome, profissão e WhatsApp.');
+      alert('Preencha cidade, bairro/localidade, nome, profissão e WhatsApp.');
+      return;
+    }
+
+    const cidadeValida = cidades.some(
+      (cidade) => cidade.nome === itemEditando.cidade
+    );
+
+    if (!cidadeValida) {
+      alert('Selecione uma cidade válida.');
       return;
     }
 
@@ -336,6 +391,8 @@ export default function AgendaAdmin() {
       const { error } = await supabase
         .from('agenda_local')
         .update({
+          cidade: itemEditando.cidade.trim(),
+          endereco: itemEditando.endereco.trim(),
           nome_completo: itemEditando.nome_completo.trim(),
           profissao: itemEditando.profissao.trim(),
           whatsapp: itemEditando.whatsapp.trim(),
@@ -624,6 +681,36 @@ export default function AgendaAdmin() {
           <h3 className="text-2xl font-bold mb-6">Novo cadastro manual</h3>
 
           <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block font-medium mb-2">Cidade *</label>
+              <select
+                value={novoCadastro.cidade}
+                onChange={(event) =>
+                  setNovoCadastro({
+                    ...novoCadastro,
+                    cidade: event.target.value,
+                  })
+                }
+                className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white"
+                required
+              >
+                <option value="">Selecione a cidade</option>
+                {cidades.map((cidade) => (
+                  <option key={cidade.id} value={cidade.nome}>
+                    {cidade.nome} - {cidade.estado}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <CampoAdmin
+              label="Bairro / Localidade *"
+              value={novoCadastro.endereco}
+              onChange={(valor) =>
+                setNovoCadastro({ ...novoCadastro, endereco: valor })
+              }
+            />
+
             <CampoAdmin
               label="Nome completo *"
               value={novoCadastro.nome_completo}
@@ -1008,6 +1095,39 @@ export default function AgendaAdmin() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-medium mb-2">Cidade *</label>
+                  <select
+                    value={itemEditando.cidade || ''}
+                    onChange={(event) =>
+                      setItemEditando({
+                        ...itemEditando,
+                        cidade: event.target.value,
+                      })
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white"
+                    required
+                  >
+                    <option value="">Selecione a cidade</option>
+                    {cidades.map((cidade) => (
+                      <option key={cidade.id} value={cidade.nome}>
+                        {cidade.nome} - {cidade.estado}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <CampoAdmin
+                  label="Bairro / Localidade *"
+                  value={itemEditando.endereco || ''}
+                  onChange={(valor) =>
+                    setItemEditando({
+                      ...itemEditando,
+                      endereco: valor,
+                    })
+                  }
+                />
+
                 <CampoAdmin
                   label="Nome completo"
                   value={itemEditando.nome_completo}
