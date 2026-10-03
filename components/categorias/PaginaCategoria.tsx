@@ -316,7 +316,13 @@ function PaginaCategoriaConteudo({
                   key={anuncio.id}
                   className="bg-white border border-slate-200 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
-                  <div className="relative h-52 overflow-hidden bg-slate-100">
+                <div
+  className={`relative overflow-hidden bg-slate-100 ${
+    categoriaBanco === 'Promoções'
+      ? 'aspect-[4/3]'
+      : 'h-52'
+  }`}
+>
                     <CarrosselCard
                       imagens={anuncio.imagens}
                       titulo={anuncio.titulo}
