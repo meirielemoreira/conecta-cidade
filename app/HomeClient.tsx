@@ -525,7 +525,8 @@ const proximoBanner = () => {
 
               <Link
                 href={linkBannerHero}
-                aria-label={`Abrir anúncio: ${bannerHeroAtual.titulo}`}className="relative block w-full aspect-[4/3] overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-2xl"className="relative block w-full aspect-[16/9] overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-2xl"
+             aria-label={`Abrir anúncio: ${bannerHeroAtual.titulo}`}
+className="relative block w-full aspect-[4/3] overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-2xl"
               >
                 <CardImage
                   src={imagemBannerHero}
