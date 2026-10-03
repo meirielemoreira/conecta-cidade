@@ -188,6 +188,7 @@ export default function Home() {
   const [profissionaisMes, setProfissionaisMes] = useState<Profissional[]>([]);
   const [loadingDestaques, setLoadingDestaques] = useState(true);
   const [loadingProfissionais, setLoadingProfissionais] = useState(true);
+  const [indiceBannerHero, setIndiceBannerHero] = useState(0);
 
   useEffect(() => {
     const carregarCidades = async () => {
@@ -301,6 +302,50 @@ export default function Home() {
     carregarDestaques();
     carregarProfissionais();
   }, [cidadeSelecionada]);
+  useEffect(() => {
+  if (destaques.length <= 1) {
+    setIndiceBannerHero(0);
+    return;
+  }
+
+  const intervaloBanner = window.setInterval(() => {
+    setIndiceBannerHero((indiceAtual) => {
+      return (indiceAtual + 1) % destaques.length;
+    });
+  }, 7000);
+
+  return () => {
+    window.clearInterval(intervaloBanner);
+  };
+}, [destaques.length]);
+const bannerHeroAtual =
+  destaques.length > 0
+    ? destaques[indiceBannerHero % destaques.length]
+    : null;
+
+const imagemBannerHero = bannerHeroAtual
+  ? obterPrimeiraImagem(bannerHeroAtual.imagens)
+  : null;
+
+const linkBannerHero = bannerHeroAtual
+  ? `${obterRotaCategoria(bannerHeroAtual.categoria)}?anuncio=${bannerHeroAtual.id}`
+  : '/anunciar';
+
+const bannerAnterior = () => {
+  if (destaques.length <= 1) return;
+
+  setIndiceBannerHero((indiceAtual) =>
+    indiceAtual === 0 ? destaques.length - 1 : indiceAtual - 1
+  );
+};
+
+const proximoBanner = () => {
+  if (destaques.length <= 1) return;
+
+  setIndiceBannerHero(
+    (indiceAtual) => (indiceAtual + 1) % destaques.length
+  );
+};
 
   const pesquisar = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -379,10 +424,10 @@ export default function Home() {
   return (
     <main className="bg-white">
 {/* HERO COMPACTO */}
-<section className="relative overflow-hidden min-h-[420px] sm:min-h-[440px] lg:min-h-[460px] flex items-center">
+<section className="relative overflow-hidden min-h-[420px] sm:min-h-[440px] lg:min-h-[500px] flex items-center">
 
   <Image
-    src="/images/nova-uniao.jpg"
+    src="/images/hero-conecta-cidade.png"
     alt="Vista de uma cidade de Minas Gerais"
     fill
     preload
@@ -392,75 +437,158 @@ export default function Home() {
 
   <div className="absolute inset-0 bg-black/55" />
 
-  <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-14 text-center text-white">
+  <div className="relative z-10 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-10 sm:py-12 lg:py-14 text-white">
+
     <InstallAppPrompt />
 
-    <div className="inline-flex items-center bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-5">
-      <span className="text-xs sm:text-sm font-medium">
-        Portal Comercial e Informativo
-      </span>
-    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,440px)] gap-8 lg:gap-10 items-center">
 
-    <h1 className="max-w-4xl mx-auto text-4xl sm:text-5xl lg:text-[52px] font-extrabold leading-tight tracking-tight">
-      Tudo da sua
-      <span className="text-orange-400"> cidade </span>
-      em um só lugar
-    </h1>
+      {/* CONTEÚDO DO HERO */}
+      <div className="text-center lg:text-left">
 
-    <p className="max-w-2xl mx-auto text-base sm:text-lg text-white/90 mt-4 leading-relaxed">
-      Anuncie e encontre imóveis, carros, serviços, promoções e produtos de produtores locais.
-    </p>
+        <div className="inline-flex items-center bg-white/15 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 mb-5">
+          <span className="text-xs sm:text-sm font-medium">
+            Portal Comercial e Informativo
+          </span>
+        </div>
 
-    <form
-      onSubmit={pesquisar}
-      className="max-w-2xl mx-auto mt-7"
-    >
-      <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-2 shadow-2xl">
-        <input
-          type="text"
-          value={termoBusca}
-          onChange={(event) => setTermoBusca(event.target.value)}
-          placeholder="O que você procura hoje?"
-          className="min-w-0 flex-1 h-12 sm:h-13 rounded-xl bg-white text-slate-800 px-4 sm:px-5 text-base focus:outline-none"
-        />
+        <h1 className="max-w-4xl mx-auto lg:mx-0 lg:text-center text-4xl sm:text-5xl lg:text-[48px] font-extrabold leading-tight tracking-tight">
+          Tudo da sua
+          <span className="text-orange-400"> cidade </span>
+          em um só lugar
+        </h1>
 
-        <select
-          value={cidadeSelecionada}
-          onChange={(event) => setCidadeSelecionada(event.target.value)}
-          aria-label="Selecionar cidade"
-          className="min-w-0 sm:w-52 h-12 sm:h-13 rounded-xl bg-slate-50 text-slate-800 px-4 text-sm sm:text-base focus:outline-none border border-slate-200"
+        <p className="max-w-2xl mx-auto lg:mx-0 text-base sm:text-lg text-white/90 mt-4 leading-relaxed">
+          Anuncie e encontre imóveis, carros, serviços, promoções e produtos de produtores locais.
+        </p>
+
+        <form
+          onSubmit={pesquisar}
+          className="max-w-2xl mx-auto lg:mx-0 mt-7"
         >
-          <option value="">Todas as cidades</option>
-          {cidades.map((cidade) => (
-            <option key={cidade.id} value={cidade.nome}>
-              {cidade.nome}
-            </option>
-          ))}
-        </select>
+          <div className="flex flex-col sm:flex-row gap-2 bg-white rounded-2xl p-2 shadow-2xl">
+            <input
+              type="text"
+              value={termoBusca}
+              onChange={(event) => setTermoBusca(event.target.value)}
+              placeholder="O que você procura hoje?"
+              className="min-w-0 flex-1 h-12 sm:h-13 rounded-xl bg-white text-slate-800 px-4 sm:px-5 text-base focus:outline-none"
+            />
 
-        <button
-          type="submit"
-          className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shrink-0"
-        >
-          Pesquisar
-        </button>
+            <select
+              value={cidadeSelecionada}
+              onChange={(event) => setCidadeSelecionada(event.target.value)}
+              aria-label="Selecionar cidade"
+              className="min-w-0 sm:w-52 h-12 sm:h-13 rounded-xl bg-slate-50 text-slate-800 px-4 text-sm sm:text-base focus:outline-none border border-slate-200"
+            >
+              <option value="">Todas as cidades</option>
+
+              {cidades.map((cidade) => (
+                <option key={cidade.id} value={cidade.nome}>
+                  {cidade.nome}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="submit"
+              className="h-12 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition shrink-0"
+            >
+              Pesquisar
+            </button>
+          </div>
+        </form>
+
+        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-5">
+          <Link
+            href="/anunciar"
+            className="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition shadow-lg"
+          >
+            Anunciar Grátis
+          </Link>
+
+          <Link
+            href="/planos"
+            className="inline-flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/40 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition"
+          >
+            Ver Planos
+          </Link>
+        </div>
       </div>
-    </form>
 
-    <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
-      <Link
-        href="/anunciar"
-        className="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition shadow-lg"
-      >
-        Anunciar Grátis
-      </Link>
+      {/* BANNER PUBLICITÁRIO */}
+      <div className="w-full max-w-[440px] mx-auto lg:ml-auto lg:mr-[-60px]">
 
-      <Link
-        href="/planos"
-        className="inline-flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 border border-white/40 text-white px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition"
-      >
-        Ver Planos
-      </Link>
+        {imagemBannerHero && bannerHeroAtual ? (
+          <>
+            <div className="relative">
+
+              <Link
+                href={linkBannerHero}
+                aria-label={`Abrir anúncio: ${bannerHeroAtual.titulo}`}className="relative block w-full aspect-[4/3] overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-2xl"className="relative block w-full aspect-[16/9] overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-2xl"
+              >
+                <CardImage
+                  src={imagemBannerHero}
+                  alt={bannerHeroAtual.titulo}
+                  sizes="(max-width: 1024px) 100vw, 440px"
+                  className="object-cover"
+                />
+              </Link>
+
+              {destaques.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={bannerAnterior}
+                    aria-label="Banner anterior"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center text-2xl leading-none transition shadow-lg"
+                  >
+                    ‹
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={proximoBanner}
+                    aria-label="Próximo banner"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center text-2xl leading-none transition shadow-lg"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+            </div>
+
+            {destaques.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-3">
+                {destaques.map((anuncio, indice) => (
+                  <button
+                    key={anuncio.id}
+                    type="button"
+                    onClick={() => setIndiceBannerHero(indice)}
+                    aria-label={`Ir para banner ${indice + 1}`}
+                    className={`h-2.5 rounded-full transition-all ${
+                      indice === indiceBannerHero
+                        ? 'w-7 bg-orange-400'
+                        : 'w-2.5 bg-white/60 hover:bg-white'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+          </>
+        ) : (
+          <Link
+            href="/anunciar"
+            className="flex w-full aspect-[16/9] items-center justify-center rounded-2xl border border-white/30 bg-black/25 backdrop-blur-sm shadow-2xl"
+          >
+            <span className="text-center text-sm sm:text-base font-semibold text-white px-6">
+              Anuncie sua empresa aqui
+            </span>
+          </Link>
+        )}
+
+      </div>
     </div>
   </div>
 </section>
@@ -486,7 +614,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {categoriasNovidades.map((categoria) => (
             <CategoryCard
               key={categoria.rota}
@@ -1215,7 +1343,7 @@ function CategoryCard({
       className="group block"
       aria-label={`Ver anúncios de ${category.nome}`}
     >
-      <article className="h-[315px] bg-white border border-slate-200 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+      <article className="h-[270px] bg-white border border-slate-200 rounded-3xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
         <div className="relative h-44 bg-slate-100 overflow-hidden shrink-0">
           <CardImage
             src={imagemAtual}
