@@ -20,7 +20,17 @@ type Anuncio = {
   instagram?: string | null;
   destaque?: boolean | null;
 };
-
+type BannerHome = {
+  id: string;
+  titulo: string;
+  imagem_url: string;
+  link_destino: string | null;
+  tipo: 'publicidade' | 'institucional';
+  ativo: boolean;
+  ordem: number;
+  data_inicio: string | null;
+  data_fim: string | null;
+};
 type Profissional = {
   id: string;
   nome_completo: string;
@@ -185,6 +195,7 @@ export default function Home() {
   const [cidadeSelecionada, setCidadeSelecionada] = useState('');
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [destaques, setDestaques] = useState<Anuncio[]>([]);
+  const [bannersHome, setBannersHome] = useState<BannerHome[]>([]);
   const [profissionaisMes, setProfissionaisMes] = useState<Profissional[]>([]);
   const [loadingDestaques, setLoadingDestaques] = useState(true);
   const [loadingProfissionais, setLoadingProfissionais] = useState(true);
@@ -303,47 +314,88 @@ export default function Home() {
     carregarProfissionais();
   }, [cidadeSelecionada]);
   useEffect(() => {
-  if (destaques.length <= 1) {
-    setIndiceBannerHero(0);
-    return;
-  }
+    const carregarBannersHome = async () => {
+      const agora = new Date().toISOString();
 
-  const intervaloBanner = window.setInterval(() => {
-    setIndiceBannerHero((indiceAtual) => {
-      return (indiceAtual + 1) % destaques.length;
-    });
-  }, 7000);
+      const { data, error } = await supabase
+        .from('banners_home')
+        .select('*')
+        .eq('ativo', true)
+        .order('ordem', { ascending: true })
+        .order('created_at', { ascending: false });
 
-  return () => {
-    window.clearInterval(intervaloBanner);
-  };
-}, [destaques.length]);
-const bannerHeroAtual =
-  destaques.length > 0
-    ? destaques[indiceBannerHero % destaques.length]
-    : null;
+      if (error) {
+        console.error('Erro ao carregar banners da Home:', error);
+        setBannersHome([]);
+        return;
+      }
 
-const imagemBannerHero = bannerHeroAtual
-  ? obterPrimeiraImagem(bannerHeroAtual.imagens)
-  : null;
+      const bannersValidos = ((data ?? []) as BannerHome[]).filter(
+        (banner) =>
+          (!banner.data_inicio || banner.data_inicio <= agora) &&
+          (!banner.data_fim || banner.data_fim >= agora)
+      );
 
-const linkBannerHero = bannerHeroAtual
-  ? `${obterRotaCategoria(bannerHeroAtual.categoria)}?anuncio=${bannerHeroAtual.id}`
-  : '/anunciar';
+      setBannersHome(bannersValidos);
+    };
 
-const bannerAnterior = () => {
-  if (destaques.length <= 1) return;
-
-  setIndiceBannerHero((indiceAtual) =>
-    indiceAtual === 0 ? destaques.length - 1 : indiceAtual - 1
+    void carregarBannersHome();
+  }, []);
+  
+   const bannersPublicidade = bannersHome.filter(
+    (banner) => banner.tipo === 'publicidade'
   );
-};
 
-const proximoBanner = () => {
-  if (destaques.length <= 1) return;
+  const bannersInstitucionais = bannersHome.filter(
+    (banner) => banner.tipo === 'institucional'
+  );
+
+  const bannersExibidos =
+    bannersPublicidade.length > 0
+      ? bannersPublicidade
+      : bannersInstitucionais;
+
+  useEffect(() => {
+    if (bannersExibidos.length <= 1) {
+      setIndiceBannerHero(0);
+      return;
+    }
+
+    const intervaloBanner = window.setInterval(() => {
+      setIndiceBannerHero((indiceAtual) =>
+        (indiceAtual + 1) % bannersExibidos.length
+      );
+    }, 7000);
+
+    return () => {
+      window.clearInterval(intervaloBanner);
+    };
+  }, [bannersExibidos.length]);
+
+  const bannerHeroAtual =
+    bannersExibidos.length > 0
+      ? bannersExibidos[indiceBannerHero % bannersExibidos.length]
+      : null;
+
+  const imagemBannerHero = bannerHeroAtual?.imagem_url || null;
+
+  const linkBannerHero = bannerHeroAtual?.link_destino || '/anunciar';
+
+  const bannerAnterior = () => {
+    if (bannersExibidos.length <= 1) return;
+
+    setIndiceBannerHero((indiceAtual) =>
+      indiceAtual === 0
+        ? bannersExibidos.length - 1
+        : indiceAtual - 1
+    );
+  };
+
+  const proximoBanner = () => {
+  if (bannersExibidos.length <= 1) return;
 
   setIndiceBannerHero(
-    (indiceAtual) => (indiceAtual + 1) % destaques.length
+    (indiceAtual) => (indiceAtual + 1) % bannersExibidos.length
   );
 };
 
@@ -536,7 +588,7 @@ className="relative block w-full aspect-[4/3] overflow-hidden rounded-2xl border
                 />
               </Link>
 
-              {destaques.length > 1 && (
+              {bannersExibidos.length > 1 && (
                 <>
                   <button
                     type="button"
@@ -548,22 +600,22 @@ className="relative block w-full aspect-[4/3] overflow-hidden rounded-2xl border
                   </button>
 
                   <button
-                    type="button"
-                    onClick={proximoBanner}
-                    aria-label="Próximo banner"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center text-2xl leading-none transition shadow-lg"
-                  >
-                    ›
-                  </button>
+  type="button"
+  onClick={proximoBanner}
+  aria-label="Próximo banner"
+  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center text-2xl leading-none transition shadow-lg"
+>
+  ›
+</button>
                 </>
               )}
             </div>
 
-            {destaques.length > 1 && (
+            {bannersExibidos.length > 1 && (
               <div className="flex items-center justify-center gap-2 mt-3">
-                {destaques.map((anuncio, indice) => (
+                {bannersExibidos.map((banner, indice) => (
                   <button
-                    key={anuncio.id}
+                    key={banner.id}
                     type="button"
                     onClick={() => setIndiceBannerHero(indice)}
                     aria-label={`Ir para banner ${indice + 1}`}
@@ -1872,6 +1924,7 @@ function ProfissionalRotativoCard({
       </div>
     </article>
   );
+
 }
 
 function CardImage({
