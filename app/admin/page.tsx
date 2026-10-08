@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import AgendaAdmin from '../../components/admin/AgendaAdmin';
 import AnunciosAdmin from '../../components/admin/AnunciosAdmin';
+import BannersHomeAdmin from '../../components/admin/BannersHomeAdmin';
 import DiretoProdutorAdmin from '../../components/admin/DiretoProdutorAdmin';
 import FinanceiroAdmin from '../../components/admin/FinanceiroAdmin';
 import NovaUniaoInformaAdmin from '../../components/admin/NovaUniaoInformaAdmin';
@@ -13,6 +14,7 @@ type Aba =
   | 'agenda'
   | 'informativos'
   | 'produtores'
+  | 'banners'
   | 'financeiro';
 
 export default function AdminPage() {
@@ -516,7 +518,19 @@ export default function AdminPage() {
           >
             Direto do Produtor
           </button>
-
+<button
+  type="button"
+  onClick={() =>
+    setActiveTab('banners')
+  }
+  className={`py-5 px-4 font-semibold transition-colors ${
+    activeTab === 'banners'
+      ? 'bg-cyan-50 text-cyan-700 border-b-4 border-cyan-600'
+      : 'text-slate-500 hover:bg-slate-50'
+  }`}
+>
+  Banners da Home
+</button>
           <button
             type="button"
             onClick={() =>
@@ -556,7 +570,9 @@ export default function AdminPage() {
               key={`produtores-${atualizacao}`}
             />
           )}
-
+{activeTab === 'banners' && (
+  <BannersHomeAdmin />
+)}
           {activeTab === 'financeiro' && (
             <FinanceiroAdmin
               key={`financeiro-${atualizacao}`}
