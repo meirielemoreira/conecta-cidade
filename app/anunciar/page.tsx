@@ -1,7 +1,5 @@
 'use client';
-
 import Link from 'next/link';
-
 import {
   Suspense,
   useEffect,
@@ -9,32 +7,25 @@ import {
   useRef,
   useState,
 } from 'react';
-
 import {
   useRouter,
   useSearchParams,
 } from 'next/navigation';
-
 import type { User } from '@supabase/supabase-js';
-
 import { createClient } from '../../lib/supabase/client';
-
 /* =========================================================
    TIPOS
-========================================================= */
-
+\========================================================= */
 type Categoria = {
   id: number;
   nome: string;
   slug: string;
 };
-
 type Cidade = {
   id: string;
   nome: string;
   estado: string;
 };
-
 type Plano = {
   nome: string;
   preco: string;
@@ -46,7 +37,6 @@ type Plano = {
   buttonClass: string;
   showInstagram: boolean;
 };
-
 type Profile = {
   id: string;
   nome: string | null;
@@ -56,7 +46,6 @@ type Profile = {
   estado: string | null;
   ativo: boolean;
 };
-
 type FormularioAnuncio = {
   nome: string;
   email: string;
@@ -69,75 +58,57 @@ type FormularioAnuncio = {
   categoria: string;
   cidade: string;
 };
-
 type DimensoesImagem = {
   largura: number;
   altura: number;
 };
-
 /* =========================================================
    CONFIGURAÇÕES
-========================================================= */
-
+\========================================================= */
 const CATEGORIAS_PERMITIDAS = [
   'Morar & Construir',
   'Motores & Rodas',
   'Promoções',
   'Onde é o Rolê?',
 ];
-
 const TAMANHO_MAXIMO_IMAGEM = 5 * 1024 * 1024;
-
 const LADO_MENOR_MINIMO = 600;
 const LADO_MAIOR_MINIMO = 800;
-
 const TIPOS_IMAGEM_PERMITIDOS = [
   'image/jpeg',
   'image/png',
   'image/webp',
 ];
-
 /* =========================================================
    PREÇO EM FORMATO BRASILEIRO
-========================================================= */
-
+\========================================================= */
 function formatarPrecoDigitado(valor: string): string {
   const somenteNumeros = valor.replace(/\D/g, '');
-
   if (!somenteNumeros) {
     return '';
   }
-
   const valorEmCentavos = Number(somenteNumeros);
-
   return (valorEmCentavos / 100).toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
-
 function converterPrecoParaNumero(valor: string): number | null {
   if (!valor.trim()) {
     return null;
   }
-
   const somenteNumeros = valor.replace(/\D/g, '');
-
   if (!somenteNumeros) {
     return null;
   }
-
   const valorConvertido = Number(somenteNumeros) / 100;
-
   return Number.isFinite(valorConvertido)
     ? valorConvertido
     : null;
 }
-
 /* =========================================================
    PÁGINA PRINCIPAL
-========================================================= */
-
+\========================================================= */
 export default function AnunciarPage() {
   return (
     <Suspense fallback={<CarregandoPagina />}>
@@ -145,77 +116,57 @@ export default function AnunciarPage() {
     </Suspense>
   );
 }
-
 /* =========================================================
    CONTEÚDO DA PÁGINA
-========================================================= */
-
+\========================================================= */
 function AnunciarConteudo() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const supabase = useMemo(
     () => createClient(),
     []
   );
-
   const previewUrlsRef = useRef<string[]>([]);
-
   const [usuario, setUsuario] =
     useState<User | null>(null);
-
   const [profile, setProfile] =
     useState<Profile | null>(null);
-
   const [
     verificandoLogin,
     setVerificandoLogin,
   ] = useState(true);
-
   const [
     precisaLogin,
     setPrecisaLogin,
   ] = useState(false);
-
   const [
     planoSelecionado,
     setPlanoSelecionado,
   ] = useState('Gratuito');
-
   const [categorias, setCategorias] =
     useState<Categoria[]>([]);
-
   const [cidades, setCidades] =
     useState<Cidade[]>([]);
-
   const [loadingCidades, setLoadingCidades] =
     useState(true);
-
   const [
     loadingCategorias,
     setLoadingCategorias,
   ] = useState(true);
-
   const [loading, setLoading] =
     useState(false);
-
   const [errorMsg, setErrorMsg] =
     useState('');
-
   const [successMsg, setSuccessMsg] =
     useState('');
-
   const [imageErrorMsg, setImageErrorMsg] =
     useState('');
-
   const [imagens, setImagens] =
     useState<File[]>([]);
-
   const [
     previewUrls,
     setPreviewUrls,
   ] = useState<string[]>([]);
-
   const [form, setForm] =
     useState<FormularioAnuncio>({
       nome: '',
@@ -229,13 +180,52 @@ function AnunciarConteudo() {
       categoria: '',
       cidade: '',
     });
+  const [configuracoesPlanos, setConfiguracoesPlanos] = useState<
+    Record<string, { valor: number; duracao_dias: number }>
+  >({});
+
+  useEffect(() => {
+    let ativo = true;
+    const carregarPlanos = async () => {
+      const { data, error } = await supabase
+        .from('configuracoes_planos')
+        .select('codigo, valor, duracao_dias')
+        .eq('ativo', true);
+      if (error) {
+        console.error('Erro ao carregar configurações dos planos:', error.message);
+        return;
+      }
+      if (ativo) {
+        setConfiguracoesPlanos(
+          Object.fromEntries(
+            (data ?? []).map((plano) => [
+              plano.codigo,
+              { valor: Number(plano.valor), duracao_dias: Number(plano.duracao_dias) },
+            ])
+          )
+        );
+      }
+    };
+    carregarPlanos();
+    return () => { ativo = false; };
+  }, [supabase]);
+
+  const obterDiasPlano = (codigo: string, padrao: number) =>
+    configuracoesPlanos[codigo]?.duracao_dias ?? padrao;
+
+  const obterPrecoPlano = (codigo: string, padrao: string, mensal = false) => {
+    const valor = configuracoesPlanos[codigo]?.valor;
+    return valor === undefined
+      ? padrao
+      : `R$ ${valor.toFixed(2).replace('.', ',')}${mensal ? '/mês' : ''}`;
+  };
 
   const planos: Plano[] = [
     {
       nome: 'Gratuito',
-      preco: 'R$ 0,00',
+      preco: obterPrecoPlano('gratuito', 'R$ 0,00'),
       descricao:
-        '1 anúncio • 5 fotos • 7 dias',
+        `1 anúncio • 5 fotos • ${obterDiasPlano('gratuito', 7)} dias`,
       observacao:
         'Ideal para começar',
       fotosMax: 5,
@@ -249,9 +239,9 @@ buttonClass:
     },
     {
       nome: 'Impulso',
-      preco: 'R$ 9,90',
+      preco: obterPrecoPlano('impulso', 'R$ 9,90'),
       descricao:
-        '1 anúncio • 5 fotos • 15 dias',
+        `1 anúncio • 5 fotos • ${obterDiasPlano('impulso', 15)} dias`,
       observacao:
         'Mais visibilidade',
       fotosMax: 5,
@@ -265,9 +255,9 @@ buttonClass:
     },
     {
       nome: 'Vitrine',
-      preco: 'R$ 19,90/mês',
+      preco: obterPrecoPlano('vitrine', 'R$ 19,90/mês', true),
       descricao:
-        'WhatsApp • Instagram • 8 fotos • 30 dias',
+        `WhatsApp • Instagram • 8 fotos • ${obterDiasPlano('vitrine', 30)} dias`,
       observacao:
         'Exposição contínua',
       fotosMax: 8,
@@ -281,9 +271,9 @@ buttonClass:
     },
     {
       nome: 'Exclusivo',
-      preco: 'R$ 29,90/mês',
+      preco: obterPrecoPlano('exclusivo', 'R$ 29,90/mês', true),
       descricao:
-        'Destaque fixo • 10 fotos • Repost social',
+        `Destaque fixo • 10 fotos • Repost social • ${obterDiasPlano('exclusivo', 30)} dias`,
       observacao:
         'Máximo alcance',
       fotosMax: 10,
@@ -296,49 +286,38 @@ buttonClass:
       showInstagram: true,
     },
   ];
-
   const planoInfo = planos.find(
     (plano) =>
       plano.nome === planoSelecionado
   );
-
   /* =======================================================
      LOGIN E PROFILE
   ======================================================= */
-
   useEffect(() => {
     let componenteAtivo = true;
-
     const verificarUsuario = async () => {
       setVerificandoLogin(true);
       setErrorMsg('');
-
       try {
         const {
           data: { user },
           error: userError,
         } = await supabase.auth.getUser();
-
         if (userError || !user) {
           if (componenteAtivo) {
             setUsuario(null);
             setProfile(null);
             setPrecisaLogin(true);
           }
-
           return;
         }
-
         if (componenteAtivo) {
           setPrecisaLogin(false);
         }
-
         if (!componenteAtivo) {
           return;
         }
-
         setUsuario(user);
-
         const {
           data: profileData,
           error: profileError,
@@ -355,43 +334,34 @@ buttonClass:
           `)
           .eq('id', user.id)
           .maybeSingle<Profile>();
-
         if (profileError) {
           throw profileError;
         }
-
         if (!profileData) {
           throw new Error(
             'Seu perfil não foi encontrado. Entre novamente ou procure o atendimento.'
           );
         }
-
         if (!profileData.ativo) {
           throw new Error(
             'Sua conta está desativada. Procure o atendimento do Conecta Cidade.'
           );
         }
-
         if (!componenteAtivo) {
           return;
         }
-
         setProfile(profileData);
-
         setForm((formAtual) => ({
           ...formAtual,
-
           nome:
             profileData.nome ||
             user.user_metadata?.full_name ||
             user.user_metadata?.name ||
             '',
-
           email:
             profileData.email ||
             user.email ||
             '',
-
           telefone:
             profileData.telefone ||
             '',
@@ -401,7 +371,6 @@ buttonClass:
           error instanceof Error
             ? error.message
             : 'Não foi possível carregar sua conta.';
-
         if (componenteAtivo) {
           setErrorMsg(mensagem);
         }
@@ -411,9 +380,7 @@ buttonClass:
         }
       }
     };
-
     verificarUsuario();
-
     return () => {
       componenteAtivo = false;
     };
@@ -422,17 +389,13 @@ buttonClass:
     searchParams,
     supabase,
   ]);
-
   /* =======================================================
      CARREGAR SOMENTE AS CATEGORIAS DE ANÚNCIOS
   ======================================================= */
-
   useEffect(() => {
     let componenteAtivo = true;
-
     const carregarCategorias = async () => {
       setLoadingCategorias(true);
-
       const { data, error } =
         await supabase
           .from('categorias')
@@ -445,17 +408,14 @@ buttonClass:
           .order('ordem', {
             ascending: true,
           });
-
       if (!componenteAtivo) {
         return;
       }
-
       if (error) {
         console.error(
           'Erro ao carregar categorias:',
           error
         );
-
         setErrorMsg(
           'Não foi possível carregar as categorias.'
         );
@@ -467,30 +427,22 @@ buttonClass:
                 categoria.nome
               )
           );
-
         setCategorias(categoriasFiltradas);
       }
-
       setLoadingCategorias(false);
     };
-
     carregarCategorias();
-
     return () => {
       componenteAtivo = false;
     };
   }, [supabase]);
-
   /* =======================================================
      CARREGAR CIDADES ATIVAS
   ======================================================= */
-
   useEffect(() => {
     let componenteAtivo = true;
-
     const carregarCidades = async () => {
       setLoadingCidades(true);
-
       const { data, error } =
         await supabase
           .from('cidades')
@@ -499,42 +451,33 @@ buttonClass:
           .order('nome', {
             ascending: true,
           });
-
       if (!componenteAtivo) {
         return;
       }
-
       if (error) {
         console.error(
           'Erro ao carregar cidades:',
           error
         );
-
         setErrorMsg(
           'Não foi possível carregar as cidades.'
         );
       } else {
         setCidades((data || []) as Cidade[]);
       }
-
       setLoadingCidades(false);
     };
-
     carregarCidades();
-
     return () => {
       componenteAtivo = false;
     };
   }, [supabase]);
-
   /* =======================================================
      PLANO E CATEGORIA RECEBIDOS PELA URL
   ======================================================= */
-
   useEffect(() => {
     const planoUrl =
       searchParams.get('plano');
-
     if (
       planoUrl &&
       planos.some(
@@ -544,10 +487,8 @@ buttonClass:
     ) {
       setPlanoSelecionado(planoUrl);
     }
-
     const categoriaUrl =
       searchParams.get('categoria');
-
     if (
       categoriaUrl &&
       CATEGORIAS_PERMITIDAS.includes(
@@ -559,10 +500,8 @@ buttonClass:
         categoria: categoriaUrl,
       }));
     }
-
     const cidadeUrl =
       searchParams.get('cidade');
-
     if (cidadeUrl) {
       setForm((formAtual) => ({
         ...formAtual,
@@ -570,16 +509,13 @@ buttonClass:
       }));
     }
   }, [searchParams]);
-
   /* =======================================================
      CONTROLE DAS URLS TEMPORÁRIAS
   ======================================================= */
-
   useEffect(() => {
     previewUrlsRef.current =
       previewUrls;
   }, [previewUrls]);
-
   useEffect(() => {
     return () => {
       previewUrlsRef.current.forEach(
@@ -589,11 +525,9 @@ buttonClass:
       );
     };
   }, []);
-
   /* =======================================================
      ALTERAÇÃO DOS CAMPOS
   ======================================================= */
-
   const handleChange = (
     event:
       | React.ChangeEvent<HTMLInputElement>
@@ -602,20 +536,16 @@ buttonClass:
   ) => {
     const { name, value } =
       event.target;
-
     setErrorMsg('');
     setSuccessMsg('');
-
     setForm((formAtual) => ({
       ...formAtual,
       [name]: value,
     }));
   };
-
   /* =======================================================
      ALTERAÇÃO DO PREÇO
   ======================================================= */
-
   const handlePrecoChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -623,20 +553,16 @@ buttonClass:
       formatarPrecoDigitado(
         event.target.value
       );
-
     setErrorMsg('');
     setSuccessMsg('');
-
     setForm((formAtual) => ({
       ...formAtual,
       preco: valorFormatado,
     }));
   };
-
   /* =======================================================
      LEITURA DAS DIMENSÕES DA IMAGEM
   ======================================================= */
-
   const lerDimensoesImagem = (
     file: File
   ): Promise<DimensoesImagem> => {
@@ -644,84 +570,64 @@ buttonClass:
       (resolve, reject) => {
         const url =
           URL.createObjectURL(file);
-
         const imagem = new Image();
-
         imagem.onload = () => {
           const largura =
             imagem.naturalWidth;
-
           const altura =
             imagem.naturalHeight;
-
           URL.revokeObjectURL(url);
-
           resolve({
             largura,
             altura,
           });
         };
-
         imagem.onerror = () => {
           URL.revokeObjectURL(url);
-
           reject(
             new Error(
               `Não foi possível analisar a imagem "${file.name}".`
             )
           );
         };
-
         imagem.src = url;
       }
     );
   };
-
   /* =======================================================
      SELEÇÃO E VALIDAÇÃO DAS FOTOS
   ======================================================= */
-
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (!event.target.files) {
       return;
     }
-
     const input = event.target;
-
     if (!planoInfo) {
       const mensagem =
         'Selecione um plano antes de escolher as fotos.';
-
       setErrorMsg(mensagem);
       setImageErrorMsg(mensagem);
-
       input.value = '';
       return;
     }
-
     const files = Array.from(
       input.files ?? []
     );
-
     if (
       imagens.length + files.length >
       planoInfo.fotosMax
     ) {
       const mensagem =
         `O Plano ${planoSelecionado} permite no máximo ${planoInfo.fotosMax} fotos.`;
-
       setErrorMsg(mensagem);
       setImageErrorMsg(mensagem);
-
       input.value = '';
       return;
     }
-
     try {
       setImageErrorMsg('');
-
       for (const file of files) {
         if (
           !TIPOS_IMAGEM_PERMITIDOS.includes(
@@ -732,7 +638,6 @@ buttonClass:
             `O arquivo "${file.name}" não está em um formato permitido. Utilize JPG, PNG ou WEBP.`
           );
         }
-
         if (
           file.size >
           TAMANHO_MAXIMO_IMAGEM
@@ -741,7 +646,6 @@ buttonClass:
             `A foto "${file.name}" ultrapassa o limite de 5 MB.`
           );
         }
-
         const {
           largura,
           altura,
@@ -749,17 +653,14 @@ buttonClass:
           await lerDimensoesImagem(
             file
           );
-
         const ladoMenor = Math.min(
           largura,
           altura
         );
-
         const ladoMaior = Math.max(
           largura,
           altura
         );
-
         if (
           ladoMenor <
             LADO_MENOR_MINIMO ||
@@ -771,29 +672,24 @@ buttonClass:
           );
         }
       }
-
       const novasUrls = files.map(
         (file) =>
           URL.createObjectURL(file)
       );
-
       setImagens(
         (imagensAtuais) => [
           ...imagensAtuais,
           ...files,
         ]
       );
-
       setPreviewUrls(
         (urlsAtuais) => [
           ...urlsAtuais,
           ...novasUrls,
         ]
       );
-
       setErrorMsg('');
       setImageErrorMsg('');
-
       setSuccessMsg(
         `${files.length} foto(s) adicionada(s) com sucesso.`
       );
@@ -802,28 +698,23 @@ buttonClass:
         error instanceof Error
           ? error.message
           : 'Não foi possível adicionar as imagens.';
-
       setErrorMsg(mensagem);
       setImageErrorMsg(mensagem);
     } finally {
       input.value = '';
     }
   };
-
   /* =======================================================
      REMOVER FOTO
   ======================================================= */
-
   const removeImage = (
     index: number
   ) => {
     const url =
       previewUrls[index];
-
     if (url) {
       URL.revokeObjectURL(url);
     }
-
     setImagens(
       (imagensAtuais) =>
         imagensAtuais.filter(
@@ -831,7 +722,6 @@ buttonClass:
             indice !== index
         )
     );
-
     setPreviewUrls(
       (urlsAtuais) =>
         urlsAtuais.filter(
@@ -839,37 +729,29 @@ buttonClass:
             indice !== index
         )
     );
-
     setSuccessMsg('');
   };
-
   /* =======================================================
      DEFINIR TIPO DO ANÚNCIO
   ======================================================= */
-
   const definirTipo = (
     categoria: string
   ) => {
     switch (categoria) {
       case 'Morar & Construir':
         return 'imovel';
-
       case 'Motores & Rodas':
         return 'veiculo';
-
       case 'Onde é o Rolê?':
         return 'evento';
-
       case 'Promoções':
       default:
         return 'promocao';
     }
   };
-
   /* =======================================================
      ATUALIZAR NOME E TELEFONE NO PROFILE
   ======================================================= */
-
   const atualizarDadosDoProfile =
     async () => {
       if (!usuario) {
@@ -877,23 +759,18 @@ buttonClass:
           'Sua sessão expirou. Entre novamente.'
         );
       }
-
       const nomeLimpo =
         form.nome.trim();
-
       const telefoneLimpo =
         form.telefone.trim();
-
       const dadosMudaram =
         nomeLimpo !==
           (profile?.nome || '') ||
         telefoneLimpo !==
           (profile?.telefone || '');
-
       if (!dadosMudaram) {
         return;
       }
-
       const { error } =
         await supabase
           .from('profiles')
@@ -905,13 +782,11 @@ buttonClass:
               new Date().toISOString(),
           })
           .eq('id', usuario.id);
-
       if (error) {
         throw new Error(
           `Não foi possível atualizar seus dados: ${error.message}`
         );
       }
-
       setProfile(
         (profileAtual) =>
           profileAtual
@@ -924,23 +799,19 @@ buttonClass:
             : profileAtual
       );
     };
-
   /* =======================================================
      ENVIO DAS IMAGENS PARA O STORAGE
   ======================================================= */
-
   const enviarImagens = async (
     profileId: string
   ) => {
     const imageUrls: string[] = [];
-
     for (const file of imagens) {
       const extensaoOriginal =
         file.name
           .split('.')
           .pop()
           ?.toLowerCase();
-
       const extensao =
         extensaoOriginal &&
         [
@@ -951,7 +822,6 @@ buttonClass:
         ].includes(extensaoOriginal)
           ? extensaoOriginal
           : 'jpg';
-
       const identificador =
         typeof crypto !==
           'undefined' &&
@@ -960,11 +830,9 @@ buttonClass:
           : Math.random()
               .toString(36)
               .slice(2);
-
       const fileName =
         `${profileId}/` +
         `${Date.now()}-${identificador}.${extensao}`;
-
       const {
         error: uploadError,
       } =
@@ -983,13 +851,11 @@ buttonClass:
                 file.type,
             }
           );
-
       if (uploadError) {
         throw new Error(
           `Erro ao enviar "${file.name}": ${uploadError.message}`
         );
       }
-
       const {
         data: publicUrlData,
       } =
@@ -1000,43 +866,33 @@ buttonClass:
           .getPublicUrl(
             fileName
           );
-
       imageUrls.push(
         publicUrlData.publicUrl
       );
     }
-
     return imageUrls;
   };
-
   /* =======================================================
      ENVIO DO FORMULÁRIO
   ======================================================= */
-
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
-
     setErrorMsg('');
     setSuccessMsg('');
-
     if (!usuario || !profile) {
       setErrorMsg(
         'Sua conta não foi carregada. Entre novamente.'
       );
-
       return;
     }
-
     if (!planoSelecionado) {
       setErrorMsg(
         'Selecione um plano.'
       );
-
       return;
     }
-
     if (
       !form.categoria ||
       !CATEGORIAS_PERMITIDAS.includes(
@@ -1046,68 +902,53 @@ buttonClass:
       setErrorMsg(
         'Selecione uma categoria válida.'
       );
-
       return;
     }
-
     if (!form.cidade) {
       setErrorMsg(
         'Selecione a cidade onde deseja anunciar.'
       );
-
       return;
     }
-
     const cidadeSelecionada =
       cidades.find(
         (cidade) =>
           cidade.nome === form.cidade
       );
-
     if (!cidadeSelecionada) {
       setErrorMsg(
         'Selecione uma cidade válida.'
       );
-
       return;
     }
-
     if (!form.nome.trim()) {
       setErrorMsg(
         'Informe seu nome.'
       );
-
       return;
     }
-
     if (
       !form.telefone.trim()
     ) {
       setErrorMsg(
         'Informe seu WhatsApp ou telefone.'
       );
-
       return;
     }
-
     if (
       !form.nome_loja.trim()
     ) {
       setErrorMsg(
         'Informe o nome do negócio ou produto.'
       );
-
       return;
     }
-
     if (!form.titulo.trim()) {
       setErrorMsg(
         'Informe o título do anúncio.'
       );
-
       return;
     }
-
     if (
       form.categoria ===
         'Onde é o Rolê?' &&
@@ -1116,10 +957,8 @@ buttonClass:
       setErrorMsg(
         'Cadastros de Onde é o Rolê? precisam ter pelo menos uma foto.'
       );
-
       return;
     }
-
     if (
       planoSelecionado !==
         'Gratuito' &&
@@ -1128,12 +967,9 @@ buttonClass:
       setErrorMsg(
         'Anúncios pagos precisam ter pelo menos uma foto.'
       );
-
       return;
     }
-
     setLoading(true);
-
     try {
       const {
         data: {
@@ -1142,7 +978,6 @@ buttonClass:
         error: sessionError,
       } =
         await supabase.auth.getUser();
-
       if (
         sessionError ||
         !usuarioAtual ||
@@ -1151,38 +986,30 @@ buttonClass:
       ) {
         const parametros =
           new URLSearchParams();
-
         parametros.set(
           'plano',
           planoSelecionado
         );
-
         parametros.set(
           'categoria',
           form.categoria
         );
-
         router.replace(
           `/login?redirect=${encodeURIComponent(
             `/anunciar?${parametros.toString()}`
           )}`
         );
-
         return;
       }
-
       await atualizarDadosDoProfile();
-
       const imageUrls =
         await enviarImagens(
           usuarioAtual.id
         );
-
       const precoValido =
         converterPrecoParaNumero(
           form.preco
         );
-
       const {
         data: anuncioCriado,
         error: anuncioError,
@@ -1192,71 +1019,52 @@ buttonClass:
           {
             profile_id:
               usuarioAtual.id,
-
             tipo: definirTipo(
               form.categoria
             ),
-
             titulo:
               form.titulo.trim(),
-
             descricao:
               form.descricao.trim(),
-
             preco: precoValido,
-
             nome_loja:
               form.nome_loja.trim(),
-
             telefone:
               form.telefone.trim(),
-
             email:
               profile.email ||
               usuarioAtual.email ||
               form.email.trim(),
-
             instagram:
               planoInfo?.showInstagram
                 ? form.instagram.trim()
                 : '',
-
             imagens: imageUrls,
-
             cidade:
               cidadeSelecionada.nome,
-
             estado:
               cidadeSelecionada.estado,
-
             plano_usado:
               planoSelecionado,
-
             categoria:
               form.categoria,
-
             status: 'pendente',
-
             payment_status:
               planoSelecionado ===
               'Gratuito'
                 ? 'pago'
                 : 'pendente',
-
             aprovado: false,
-
             ativo: true,
           },
         ])
         .select('id')
         .single();
-
       if (anuncioError) {
         throw new Error(
           `Não foi possível cadastrar o anúncio: ${anuncioError.message}`
         );
       }
-
       router.push(
         `/novo-anuncio?user_id=${usuarioAtual.id}` +
           `&anuncio_id=${anuncioCriado.id}` +
@@ -1269,85 +1077,68 @@ buttonClass:
         'Erro ao cadastrar anúncio:',
         error
       );
-
       const mensagem =
         error instanceof Error
           ? error.message
           : 'Erro ao cadastrar o anúncio. Tente novamente.';
-
       setErrorMsg(mensagem);
     } finally {
       setLoading(false);
     }
   };
-
   /* =======================================================
      CARREGAMENTO
   ======================================================= */
-
   if (verificandoLogin) {
     return <CarregandoPagina />;
   }
-
   if (precisaLogin) {
     const planoUrl =
       searchParams.get('plano');
-
     const categoriaUrl =
       searchParams.get('categoria');
-
     const parametros = new URLSearchParams();
-
     if (planoUrl) {
       parametros.set('plano', planoUrl);
     }
-
     if (categoriaUrl) {
       parametros.set(
         'categoria',
         categoriaUrl
       );
     }
-
     const destino = parametros.toString()
       ? `/anunciar?${parametros.toString()}`
       : '/anunciar';
-
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10 text-slate-800">
         <section className="w-full max-w-lg rounded-2xl border border-orange-200 bg-white p-6 text-center shadow-lg sm:p-8">
           <div className="mx-auto inline-flex rounded-full bg-orange-100 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-orange-700">
             Anúncio gratuito
           </div>
-
           <h1 className="mt-4 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
             Anuncie grátis na sua cidade
           </h1>
-
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
             Divulgue seu produto, serviço, imóvel ou veículo de forma simples no Portal Conecta Cidade.
           </p>
-
           <div className="mt-6 grid gap-3 text-left">
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
-                ✓ 7 dias grátis
+                ✓ {obterDiasPlano('gratuito', 7)} dias grátis
               </p>
             </div>
-
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
                 ✓ Apareça para quem mora na cidade
               </p>
             </div>
-
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
                 ✓ Rápido e fácil
               </p>
             </div>
           </div>
-
           <button
             type="button"
             onClick={() =>
@@ -1361,7 +1152,6 @@ buttonClass:
           >
             Quero anunciar grátis
           </button>
-
           <p className="mt-4 text-xs leading-relaxed text-slate-500">
             Ao continuar, você poderá entrar na sua conta ou criar seu cadastro.
           </p>
@@ -1369,44 +1159,35 @@ buttonClass:
       </main>
     );
   }
-
   /* =======================================================
      INTERFACE
   ======================================================= */
-
   return (
     <main className="min-h-screen bg-slate-100 pb-20 font-sans text-slate-800">
       {/* HERO */}
-
       <section className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-800 py-4 text-white shadow-md md:py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 text-center">
           <h1 className="mx-auto w-full max-w-6xl text-center text-2xl font-extrabold uppercase leading-tight tracking-tight md:text-5xl">
             Impulsione seu negócio na sua cidade!
           </h1>
-
           <p className="mx-auto mt-1.5 w-full max-w-4xl text-center text-[11px] font-medium uppercase leading-relaxed tracking-wide text-slate-300 md:mt-2 md:text-base">
             Alcance toda a cidade e região com nosso portal de serviços e produtos.
           </p>
         </div>
       </section>
-
       {/* TRÊS COLUNAS */}
-
       <div className="mx-auto max-w-[1500px] px-3 py-5 md:px-6 md:py-10">
         <div className="grid items-start gap-7 lg:grid-cols-12">
           {/* CARD FORMULÁRIO */}
-
           <section className="lg:col-span-5">
             <div className="rounded-2xl border border-sky-300 bg-white p-4 shadow-lg md:p-7">
               <FaixaCard
                 texto="Reserve seu espaço publicitário agora!"
                 classe="bg-sky-700"
               />
-
               <p className="mt-3 text-center text-sm font-medium text-slate-700">
                 Escolha abaixo o que mais se encaixa com seu negócio.
               </p>
-
               <div className="mt-2 text-center">
                 <Link
                   href="/planos"
@@ -1415,27 +1196,22 @@ buttonClass:
                   Compare os planos e benefícios →
                 </Link>
               </div>
-
               {/* CONTA */}
-
               {usuario && (
                 <div className="mt-5 rounded-xl border border-sky-200 bg-sky-50 p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-sky-700">
                     Conta conectada
                   </p>
-
                   <div className="mt-1 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                     <div>
                       <p className="font-bold text-slate-900">
                         {form.nome ||
                           'Usuário Conecta Cidade'}
                       </p>
-
                       <p className="text-xs text-slate-600">
                         {form.email}
                       </p>
                     </div>
-
                     <button
                       type="button"
                       onClick={() =>
@@ -1450,21 +1226,17 @@ buttonClass:
                   </div>
                 </div>
               )}
-
               {/* PLANOS */}
-
               <div className="mt-6">
                 <h2 className="mb-3 text-sm font-bold text-slate-800">
                   Escolha um plano
                 </h2>
-
                 <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
                   {planos.map(
                     (plano) => {
                       const selecionado =
                         planoSelecionado ===
                         plano.nome;
-
                       return (
                         <button
                           type="button"
@@ -1473,10 +1245,8 @@ buttonClass:
                             setPlanoSelecionado(
                               plano.nome
                             );
-
                             setErrorMsg('');
                             setSuccessMsg('');
-
                             if (
                               imagens.length >
                               plano.fotosMax
@@ -1485,14 +1255,12 @@ buttonClass:
                                 previewUrls.slice(
                                   plano.fotosMax
                                 );
-
                               urlsRemovidas.forEach(
                                 (url) =>
                                   URL.revokeObjectURL(
                                     url
                                   )
                               );
-
                               setImagens(
                                 (atuais) =>
                                   atuais.slice(
@@ -1500,7 +1268,6 @@ buttonClass:
                                     plano.fotosMax
                                   )
                               );
-
                               setPreviewUrls(
                                 (atuais) =>
                                   atuais.slice(
@@ -1509,7 +1276,6 @@ buttonClass:
                                   )
                               );
                             }
-
                             if (
                               !plano.showInstagram
                             ) {
@@ -1534,22 +1300,18 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                             <h3 className="text-sm font-extrabold text-slate-900 sm:text-base">
                               {plano.nome}
                             </h3>
-
                             <p
                               className={`mt-1 text-base font-black leading-tight sm:text-xl ${plano.priceClass}`}
                             >
                               {plano.preco}
                             </p>
-
                             <p className="mt-1.5 text-[10px] font-medium leading-snug text-slate-600 sm:mt-2 sm:text-[11px] sm:leading-relaxed">
                               {plano.descricao}
                             </p>
-
                             <p className="mt-1 text-[9px] leading-snug text-slate-500 sm:mt-2 sm:text-[10px]">
                               {plano.observacao}
                             </p>
                           </div>
-
                           <span
                             className={`mt-2 block w-full rounded-md border px-1 py-1.5 text-center text-[9px] font-bold uppercase sm:mt-3 sm:text-[10px] ${
                               selecionado
@@ -1567,24 +1329,19 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   )}
                 </div>
               </div>
-
               {/* MENSAGENS */}
-
               {errorMsg && (
                 <div className="mt-5 rounded-xl border border-red-300 bg-red-50 p-4 text-sm font-semibold text-red-700">
                   {errorMsg}
                 </div>
               )}
-
               {successMsg &&
                 !errorMsg && (
                   <div className="mt-5 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
                     {successMsg}
                   </div>
                 )}
-
               {/* FORMULÁRIO */}
-
               <form
                 onSubmit={handleSubmit}
                 className="mt-6 space-y-5"
@@ -1592,7 +1349,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                 <h2 className="text-sm font-bold text-slate-800">
                   Preencha os dados do anúncio
                 </h2>
-
                 <div>
                   <label
                     htmlFor="categoria"
@@ -1600,7 +1356,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   >
                     Categoria *
                   </label>
-
                   <select
                     id="categoria"
                     name="categoria"
@@ -1621,7 +1376,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                         ? 'Carregando categorias...'
                         : 'Selecione uma categoria'}
                     </option>
-
                     {categorias.map(
                       (categoria) => (
                         <option
@@ -1637,12 +1391,10 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                       )
                     )}
                   </select>
-
                   <p className="mt-1.5 text-xs text-slate-500">
                     Disponível para Morar & Construir, Motores & Rodas, Promoções e Onde é o Rolê?.
                   </p>
                 </div>
-
                 <div>
                   <label
                     htmlFor="cidade"
@@ -1650,7 +1402,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   >
                     Cidade onde deseja anunciar *
                   </label>
-
                   <select
                     id="cidade"
                     name="cidade"
@@ -1665,7 +1416,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                         ? 'Carregando cidades...'
                         : 'Selecione a cidade'}
                     </option>
-
                     {cidades.map((cidade) => (
                       <option
                         key={cidade.id}
@@ -1675,12 +1425,10 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                       </option>
                     ))}
                   </select>
-
                   <p className="mt-1.5 text-xs text-slate-500">
                     Escolha a cidade onde este anúncio deverá aparecer.
                   </p>
                 </div>
-
                 <Campo
                   label="Nome completo *"
                   type="text"
@@ -1691,7 +1439,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   }
                   required
                 />
-
                 <Campo
                   label="WhatsApp / Telefone *"
                   type="tel"
@@ -1705,7 +1452,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   required
                   placeholder="(31) 99999-9999"
                 />
-
                 <Campo
                   label="E-mail da conta"
                   type="email"
@@ -1716,7 +1462,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   }
                   disabled
                 />
-
                 <Campo
                   label="Nome do negócio / Produto *"
                   type="text"
@@ -1730,7 +1475,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   required
                   placeholder="Ex.: Empório Agropet"
                 />
-
                 <Campo
                   label="Título do anúncio *"
                   type="text"
@@ -1742,9 +1486,7 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   required
                   placeholder="Ex.: Apartamento para aluguel"
                 />
-
                 {/* PREÇO FORMATADO */}
-
                 {form.categoria !==
                   'Onde é o Rolê?' && (
                   <div>
@@ -1754,7 +1496,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     >
                       Preço (R$)
                     </label>
-
                     <div>
                       <input
                         id="preco"
@@ -1770,13 +1511,11 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                         className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                       />
                     </div>
-
                     <p className="mt-1.5 text-xs text-slate-500">
                       Digite somente os números. Para informar R$ 3,00, digite 300.
                     </p>
                   </div>
                 )}
-
                 {planoInfo?.showInstagram && (
                   <Campo
                     label="Instagram"
@@ -1791,9 +1530,7 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     placeholder="@seu.instagram"
                   />
                 )}
-
                 {/* FOTOS */}
-
                 <div>
                   <div className="mb-1.5 flex items-center justify-between gap-4">
                     <label
@@ -1802,14 +1539,12 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     >
                       Fotos do anúncio
                     </label>
-
                     <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">
                       {imagens.length}/
                       {planoInfo?.fotosMax ||
                         5}
                     </span>
                   </div>
-
                   <input
                     id="fotos-anuncio"
                     type="file"
@@ -1823,36 +1558,29 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     }
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-sky-700 file:px-4 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-sky-800 disabled:bg-slate-100"
                   />
-
                   {imageErrorMsg && (
                     <div className="mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
                       {imageErrorMsg}
                     </div>
                   )}
-
                   <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-slate-700">
                     <p className="font-bold text-amber-800">
                       Recomendações para as fotos
                     </p>
-
                     <p className="mt-1">
                       JPG, PNG ou WEBP • Até 5 MB por foto • Resolução mínima de 800 × 600 px.
                     </p>
-
                     <p className="mt-1">
                       Recomendado: 1200 × 900 px ou 1080 × 1080 px. A primeira foto será usada como capa.
                     </p>
                   </div>
                 </div>
-
                 {/* PRÉVIAS */}
-
                 {previewUrls.length > 0 && (
                   <div>
                     <p className="mb-2 text-xs font-semibold text-slate-600">
                       A primeira imagem será a foto principal.
                     </p>
-
                     <div className="flex flex-wrap gap-3">
                       {previewUrls.map(
                         (url, index) => (
@@ -1867,13 +1595,11 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                               }`}
                               className="h-24 w-24 rounded-xl border border-slate-200 object-cover shadow-sm"
                             />
-
                             {index === 0 && (
                               <span className="absolute bottom-1 left-1 rounded bg-slate-900/80 px-2 py-0.5 text-[9px] font-bold uppercase text-white">
                                 Capa
                               </span>
                             )}
-
                             <button
                               type="button"
                               onClick={() =>
@@ -1894,7 +1620,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     </div>
                   </div>
                 )}
-
                 <div>
                   <label
                     htmlFor="descricao"
@@ -1902,7 +1627,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   >
                     Descrição
                   </label>
-
                   <textarea
                     id="descricao"
                     name="descricao"
@@ -1917,13 +1641,11 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                     placeholder="Descreva o produto, serviço, imóvel, veículo ou estabelecimento..."
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
                   />
-
                   <p className="mt-1 text-right text-xs text-slate-500">
                     {form.descricao.length}
                     /1200 caracteres
                   </p>
                 </div>
-
                 <button
                   type="submit"
                   disabled={
@@ -1944,20 +1666,16 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
               </form>
             </div>
           </section>
-
           {/* CARD AGENDA LOCAL */}
-
           <section className="lg:col-span-4">
             <div className="rounded-2xl border border-orange-300 bg-white p-4 shadow-lg md:p-6">
               <FaixaCard
                 texto="Faça parte do nosso guia de profissionais!"
                 classe="bg-orange-600"
               />
-
               <h2 className="mt-5 text-center text-xl font-black uppercase leading-tight text-slate-900 md:mt-6 md:text-2xl">
                 Agenda Local
               </h2>
-
               <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-center">
                 <p className="text-xl font-black text-orange-700">
                   R$ 19,90
@@ -1966,15 +1684,12 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   60 dias de divulgação
                 </p>
               </div>
-
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
                 Divulgue sua empresa, profissão ou serviço para moradores da cidade encontrarem seu contato com facilidade.
               </p>
-
               <p className="mt-4 text-sm font-bold text-slate-900">
                 Alguns profissionais e serviços que podem participar:
               </p>
-
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 md:grid-cols-1 md:text-sm xl:grid-cols-2">
                 <CategoriaServicoSimples titulo="Saúde e utilidade pública" />
                 <CategoriaServicoSimples titulo="Profissionais da saúde" />
@@ -1983,11 +1698,9 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                 <CategoriaServicoSimples titulo="Automotivo" />
                 <CategoriaServicoSimples titulo="Profissionais e empresas" />
               </div>
-
               <p className="mt-3 text-xs italic text-slate-500">
                 E outros serviços e profissionais da região.
               </p>
-
               <button
                 type="button"
                 onClick={() =>
@@ -2001,20 +1714,16 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
               </button>
             </div>
           </section>
-
           {/* CARD DIRETO DO PRODUTOR */}
-
           <section className="lg:col-span-3">
             <div className="rounded-2xl border border-emerald-300 bg-white p-4 shadow-lg md:p-6">
               <FaixaCard
                 texto="Programa Direto do Produtor"
                 classe="bg-emerald-600"
               />
-
               <h2 className="mt-5 text-center text-xl font-black leading-tight text-slate-900 md:mt-6 md:text-2xl">
                 Divulgue gratuitamente sua produção local!
               </h2>
-
               <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
                 <p className="text-xl font-black text-emerald-700">
                   GRATUITO
@@ -2023,11 +1732,9 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   Divulgação por até 30 dias
                 </p>
               </div>
-
               <p className="mt-4 text-sm leading-relaxed text-slate-700">
                 Espaço destinado a pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos da sua cidade e região.
               </p>
-
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                 <ul className="space-y-2 text-sm font-medium text-slate-800">
                   <ItemProdutor texto="Vagas limitadas" />
@@ -2036,7 +1743,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
                   <ItemProdutor texto="Lista de espera quando as vagas estiverem preenchidas" />
                 </ul>
               </div>
-
               <button
                 type="button"
                 onClick={() =>
@@ -2048,7 +1754,6 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
               >
                 Participar gratuitamente
               </button>
-
               <button
                 type="button"
                 onClick={() =>
@@ -2067,17 +1772,14 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
     </main>
   );
 }
-
 /* =========================================================
    COMPONENTES AUXILIARES
-========================================================= */
-
+\========================================================= */
 function CarregandoPagina() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-6">
       <div className="text-center">
         <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-sky-200 border-t-sky-700" />
-
         <p className="mt-4 font-semibold text-slate-600">
           Carregando sua conta...
         </p>
@@ -2085,7 +1787,6 @@ function CarregandoPagina() {
     </main>
   );
 }
-
 function FaixaCard({
   texto,
   classe,
@@ -2103,7 +1804,6 @@ function FaixaCard({
     </div>
   );
 }
-
 function Campo({
   label,
   type,
@@ -2133,7 +1833,6 @@ function Campo({
       >
         {label}
       </label>
-
       <input
         id={name}
         type={type}
@@ -2148,7 +1847,6 @@ function Campo({
     </div>
   );
 }
-
 function CategoriaServicoSimples({
   titulo,
 }: {
@@ -2162,7 +1860,6 @@ function CategoriaServicoSimples({
     </div>
   );
 }
-
 function ItemProdutor({
   texto,
 }: {
@@ -2173,7 +1870,6 @@ function ItemProdutor({
       <span className="mt-0.5 font-black text-emerald-600">
         ✓
       </span>
-
       <span>{texto}</span>
     </li>
   );

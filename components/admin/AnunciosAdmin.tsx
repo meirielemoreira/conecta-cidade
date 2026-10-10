@@ -16,6 +16,13 @@ type Cidade = {
   estado: string;
 };
 
+type ConfiguracaoPlano = {
+  codigo: string;
+  nome: string;
+  duracao_dias: number | null;
+  ativo: boolean;
+};
+
 type Anuncio = {
   id: string;
   titulo: string;
@@ -145,6 +152,8 @@ function formatarData(valor?: string | null) {
 
 export default function AnunciosAdmin() {
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
+  const [configuracoesPlanos, setConfiguracoesPlanos] =
+  useState<ConfiguracaoPlano[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [loading, setLoading] = useState(true);
@@ -170,7 +179,7 @@ export default function AnunciosAdmin() {
   const carregarDados = async () => {
     setLoading(true);
 
-    const [resAnuncios, resCategorias, resCidades] = await Promise.all([
+    const [resAnuncios, resCategorias, resCidades, resPlanos] = await Promise.all([
       supabase
         .from('anuncios')
         .select('*')
@@ -182,11 +191,16 @@ export default function AnunciosAdmin() {
         .eq('ativa', true)
         .order('ordem', { ascending: true }),
 
-      supabase
+       supabase
         .from('cidades')
         .select('id, nome, slug, estado')
         .eq('ativa', true)
         .order('nome', { ascending: true }),
+
+      supabase
+        .from('configuracoes_planos')
+        .select('codigo, nome, duracao_dias, ativo')
+        .eq('ativo', true),
     ]);
 
     if (resAnuncios.error) {
@@ -211,13 +225,52 @@ export default function AnunciosAdmin() {
     } else {
       setCidades((resCidades.data || []) as Cidade[]);
     }
-
+if (resPlanos.error) {
+  console.error(
+    'Erro ao carregar configurações dos planos:',
+    resPlanos.error
+  );
+  setConfiguracoesPlanos([]);
+} else {
+  setConfiguracoesPlanos(
+    (resPlanos.data || []) as ConfiguracaoPlano[]
+  );
+}
     setLoading(false);
   };
 
   useEffect(() => {
     carregarDados();
   }, []);
+  
+const obterDuracaoPlano = (nomePlano: string | null): number | null => {
+  if (nomePlano === 'Cortesia') {
+    return 30;
+  }
+
+  if (!nomePlano) {
+    return null;
+  }
+
+  const configuracao = configuracoesPlanos.find(
+    (plano) =>
+      plano.nome.trim().toLowerCase() ===
+      nomePlano.trim().toLowerCase()
+  );
+
+  const dias = configuracao?.duracao_dias;
+
+  if (
+    dias === null ||
+    dias === undefined ||
+    !Number.isInteger(Number(dias)) ||
+    Number(dias) <= 0
+  ) {
+    return null;
+  }
+
+  return Number(dias);
+};
 
   const pendentes = anuncios.filter(
     (anuncio) => anuncio.status === 'pendente'
@@ -345,13 +398,37 @@ export default function AnunciosAdmin() {
       if (!continuar) return;
     }
 
+    const atualizacao: {
+      aprovado: boolean;
+      status: 'aprovado' | 'rejeitado';
+      ativo: boolean;
+      data_expiracao?: string;
+    } = {
+      aprovado: novoStatus === 'aprovado',
+      status: novoStatus,
+      ativo: novoStatus === 'aprovado',
+    };
+
+    // A duração começa na primeira aprovação, sem alterar anúncios já aprovados.
+    if (novoStatus === 'aprovado' && !anuncio?.aprovado) {
+      const dias = obterDuracaoPlano(anuncio?.plano_usado ?? null);
+
+      if (dias === null) {
+        alert(
+          'Não foi possível identificar a duração deste plano. ' +
+          'Confira as configurações no Financeiro antes de aprovar.'
+        );
+        return;
+      }
+
+      const vencimento = new Date();
+      vencimento.setDate(vencimento.getDate() + dias);
+      atualizacao.data_expiracao = vencimento.toISOString();
+    }
+
     const { error } = await supabase
       .from('anuncios')
-      .update({
-        aprovado: novoStatus === 'aprovado',
-        status: novoStatus,
-        ativo: novoStatus === 'aprovado',
-      })
+      .update(atualizacao)
       .eq('id', id);
 
     if (error) {
@@ -380,12 +457,15 @@ export default function AnunciosAdmin() {
   };
 
   const renovarAnuncio = async (anuncio: Anuncio) => {
-    const dias =
-      anuncio.plano_usado === 'Gratuito'
-        ? 7
-        : anuncio.plano_usado === 'Impulso'
-          ? 15
-          : 30;
+    const dias = obterDuracaoPlano(anuncio.plano_usado);
+
+if (dias === null) {
+  alert(
+    'Não foi possível identificar a duração deste plano. ' +
+    'Confira as configurações no Financeiro antes de renovar.'
+  );
+  return;
+}
 
     if (
       !confirm(
@@ -508,7 +588,15 @@ export default function AnunciosAdmin() {
       alert('Selecione uma cidade válida.');
       return;
     }
+      const dias = obterDuracaoPlano(novoAnuncio.plano_usado);
 
+if (dias === null) {
+  alert(
+    'Não foi possível identificar a duração deste plano. ' +
+    'Confira as configurações no Financeiro antes de cadastrar.'
+  );
+  return;
+}
     setSalvandoNovo(true);
 
     try {
@@ -520,13 +608,6 @@ export default function AnunciosAdmin() {
           'admin'
         );
       }
-
-      const dias =
-        novoAnuncio.plano_usado === 'Gratuito'
-          ? 7
-          : novoAnuncio.plano_usado === 'Impulso'
-            ? 15
-            : 30;
 
       const dataExpiracao = new Date();
 
