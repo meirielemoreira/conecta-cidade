@@ -31,352 +31,333 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
   },
 };
+
 export default async function PlanosPage() {
   const { data: configuracoes, error } = await supabase
     .from('configuracoes_planos')
     .select('codigo, valor, duracao_dias')
     .eq('ativo', true);
+
   if (error) {
     console.error('Erro ao carregar os planos:', error.message);
   }
+
   const planosPorCodigo = Object.fromEntries(
-  (configuracoes ?? []).map((plano) => [plano.codigo, plano])
-);
-const obterPlano = (codigo: string) => {
-  return planosPorCodigo[codigo];
-};
-const formatarPreco = (valor: number) => {
-  return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`;
-};
+    (configuracoes ?? []).map((plano) => [plano.codigo, plano])
+  );
+
+  const obterPlano = (codigo: string) => {
+    return planosPorCodigo[codigo];
+  };
+
+  const formatarPreco = (valor: number) => {
+    return `R$ ${Number(valor).toFixed(2).replace('.', ',')}`;
+  };
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-6 md:py-12">
-      <div className="mx-auto max-w-5xl px-3 sm:px-4 md:px-6">
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-8 md:py-14">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        
         {/* Título Principal */}
-        <section className="mb-6 text-center md:mb-12">
-          <span className="mb-2 inline-flex rounded-full bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-orange-700 md:mb-4 md:px-4 md:py-1.5 md:text-xs">
+        <section className="mb-10 text-center md:mb-14">
+          <span className="mb-3 inline-flex rounded-full bg-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-orange-600">
             Planos Conecta Cidade
           </span>
-          <h1 className="mb-2 text-3xl font-extrabold leading-tight text-slate-900 md:mb-4 md:text-5xl">
-  Divulgue seu negócio na sua cidade
-</h1>
-          <p className="mx-auto max-w-3xl text-sm leading-relaxed text-slate-600 md:hidden">
-            Escolha o plano ideal e apareça para mais pessoas na sua cidade.
-          </p>
-          <p className="mx-auto hidden max-w-3xl text-base leading-relaxed text-slate-600 md:block md:text-lg">
-            O Plano Gratuito é ótimo para testar e divulgar seu trabalho.
-            Mas, se você quer vender mais e ter visibilidade na cidade,
-            nossos planos pagos fazem toda a diferença.
+          <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
+            Divulgue seu negócio na sua cidade
+          </h1>
+          <p className="mx-auto max-w-2xl text-base text-slate-600 md:text-lg">
+            Compare os benefícios e escolha a melhor forma de aparecer para os moradores.
           </p>
         </section>
-         {/* Primeira linha - 3 Cards */}
-        <div className="mb-6 grid grid-cols-1 gap-3 md:mb-16 md:grid-cols-3 md:gap-6">
+
+        {/* Primeira linha */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          
           {/* Plano Gratuito */}
-          <article className="relative h-full flex flex-col rounded-2xl border-2 border-orange-500 bg-orange-50 p-4 md:rounded-3xl md:p-7 shadow-lg ring-4 ring-orange-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-orange-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
-              COMECE POR AQUI
+          <article className="relative flex h-full flex-col rounded-2xl border border-orange-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="absolute top-4 right-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+  Comece aqui
+</div>
+            
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-xl">
+                📢
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Plano Gratuito</h3>
             </div>
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-orange-100 text-2xl md:text-3xl">📢</div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Plano Gratuito</h3>
+
+            <div className="mb-1">
+              <span className="text-3xl font-extrabold text-orange-600">
+                {obterPlano('gratuito') ? formatarPreco(obterPlano('gratuito').valor) : 'R$ 0,00'}
+              </span>
             </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-orange-600">
-  {obterPlano('gratuito') ? formatarPreco(obterPlano('gratuito').valor) : 'R$ 0,00'}
-</span>
-            </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Anuncie sem custo!</p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 anúncio</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>5 fotos</li>
-              <li className="flex items-start gap-2">
-  <span className="font-bold text-emerald-600">✓</span>
-  {obterPlano('gratuito')?.duracao_dias ?? 30} dias de divulgação
-</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Divulgação gratuita</li>
+            <p className="mb-6 text-sm text-slate-500">Ideal para testar a plataforma</p>
+
+            <ul className="mb-8 flex-1 space-y-3 text-sm text-slate-700">
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                {obterPlano('gratuito')?.duracao_dias ?? 30} dias de divulgação
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                5 fotos
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                WhatsApp
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Novidades da Home
+              </li>
             </ul>
-            <Link href="/anunciar?plano=Gratuito" className="mt-3 block w-full rounded-xl bg-orange-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-orange-700 active:scale-95">
-              Começar agora
+
+            <Link
+              href="/anunciar?plano=Gratuito"
+              className="block w-full rounded-xl bg-orange-500 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
+            >
+              Anunciar grátis
             </Link>
           </article>
-          {/* Direto do Produtor */}
-          <article className="h-full relative flex flex-col rounded-2xl border-2 border-emerald-500 bg-emerald-50 p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">ESPECIAL</div>
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-emerald-100 text-2xl md:text-3xl">🌱</div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Direto do Produtor</h3>
-            </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-emerald-600">R$ 0,00</span>
-            </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Você é produtor rural ou artesão?</p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Divulgação por 30 dias</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 anúncio</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 foto</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Destaque na Home</li>
-            </ul>
-            <Link href="/direto-do-produtor/participar" className="mt-3 block w-full rounded-xl bg-emerald-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-emerald-700 active:scale-95">
-              Quero participar
-            </Link>
-          </article>
-          {/* Agenda Local */}
-          <article className="h-full relative flex flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-sky-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">SERVIÇOS</div>
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">📍</div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">Agenda Local</h3>
-            </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">{obterPlano('agenda_local') ? formatarPreco(obterPlano('agenda_local').valor) : 'R$ 19,90'}</span>
-            </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">Ideal para empresas e serviços.</p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>{obterPlano('agenda_local')?.duracao_dias ?? 60} dias de divulgação</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>1 foto da empresa ou serviço</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>WhatsApp + Instagram</li>
-              <li className="flex items-start gap-2"><span className="font-bold text-emerald-600">✓</span>Destaque na Home</li>
-            </ul>
-            <Link href="/agenda-local/cadastro" className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-auto md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95">
-              Escolher plano →
-            </Link>
-          </article>
-        </div>
-        {/* Segunda linha - Planos Pagos */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-6">
+
           {/* Impulso */}
-          <article className="flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
+          <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-xl">
                 🚀
               </div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
-                Impulso
-              </h3>
+              <h3 className="text-lg font-bold text-slate-900">Impulso</h3>
             </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
+
+            <div className="mb-1">
+              <span className="text-3xl font-extrabold text-slate-900">
                 {obterPlano('impulso') ? formatarPreco(obterPlano('impulso').valor) : 'R$ 9,90'}
               </span>
             </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
-              Mais visibilidade para vender rápido.
-            </p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                1 anúncio
+            <p className="mb-6 text-sm text-slate-500">Mais tempo de divulgação</p>
+
+            <ul className="mb-8 flex-1 space-y-3 text-sm text-slate-700">
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                {obterPlano('impulso')?.duracao_dias ?? 40} dias de divulgação
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
                 5 fotos
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                {obterPlano('impulso')?.duracao_dias ?? 40} dias de anúncio
-              </li>
-            </ul>
-            <Link
-              href="/anunciar?plano=Impulso"
-              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
-            >
-              Escolher plano →
-            </Link>
-          </article>
-          {/* Vitrine */}
-          <article className="relative flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
-                ⭐
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
-                Vitrine
-              </h3>
-            </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
-                {obterPlano('vitrine') ? formatarPreco(obterPlano('vitrine').valor) : 'R$ 19,90'}
-              </span>
-              <span className="pb-1 text-xs font-semibold text-slate-500">
-                /mês
-              </span>
-            </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
-              Maior visibilidade e vendas rápidas.
-            </p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
                 WhatsApp + Instagram
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Novidades da Home
+              </li>
+            </ul>
+
+            <Link
+              href="/anunciar?plano=Impulso"
+              className="block w-full rounded-xl bg-sky-600 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-sky-700"
+            >
+              Escolher Impulso
+            </Link>
+          </article>
+
+          {/* Vitrine */}
+          <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-xl">
+                ⭐
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Vitrine</h3>
+            </div>
+
+            <div className="mb-1">
+              <span className="text-3xl font-extrabold text-slate-900">
+                {obterPlano('vitrine') ? formatarPreco(obterPlano('vitrine').valor) : 'R$ 19,90'}
+              </span>
+            </div>
+            <p className="mb-6 text-sm text-slate-500">Aparece nos Destaques</p>
+
+            <ul className="mb-8 flex-1 space-y-3 text-sm text-slate-700">
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                {obterPlano('vitrine')?.duracao_dias ?? 45} dias de divulgação
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
                 Até 8 fotos
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                {obterPlano('vitrine')?.duracao_dias ?? 45} dias de anúncio
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                WhatsApp + Instagram
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Destaques da Home
               </li>
             </ul>
+
             <Link
               href="/anunciar?plano=Vitrine"
-              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
+              className="block w-full rounded-xl bg-sky-600 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-sky-700"
             >
-              Escolher plano →
+              Escolher Vitrine
             </Link>
           </article>
+        </div>
+
+        {/* Segunda linha - centralizada */}
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 md:max-w-3xl md:mx-auto">
+          
           {/* Exclusivo */}
-          <article className="relative flex h-full flex-col rounded-2xl border-2 border-sky-500 bg-white p-4 md:rounded-3xl md:p-7 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-            <div className="absolute -top-2 right-4 whitespace-nowrap rounded-full bg-sky-600 px-3 py-1 text-[10px] font-bold text-white md:-top-3 md:right-6 md:px-4 md:text-xs">
-              DESTAQUE
-            </div>
-            <div className="mb-2 flex items-center gap-3 md:mb-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl md:h-14 md:w-14 md:rounded-2xl bg-sky-100 text-2xl md:text-3xl">
+          <article className="relative flex h-full flex-col rounded-2xl border border-violet-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+           <div className="absolute top-4 right-4 rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+  Mais completo
+</div>
+            
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-xl">
                 👑
               </div>
-              <h3 className="text-xl font-bold text-slate-900 md:text-2xl">
-                Exclusivo
-              </h3>
+              <h3 className="text-lg font-bold text-slate-900">Exclusivo</h3>
             </div>
-            <div className="mb-2 flex items-end gap-2 md:mb-4">
-              <span className="text-2xl font-extrabold md:text-3xl text-sky-600">
+
+            <div className="mb-1">
+              <span className="text-3xl font-extrabold text-violet-700">
                 {obterPlano('exclusivo') ? formatarPreco(obterPlano('exclusivo').valor) : 'R$ 29,90'}
               </span>
-              <span className="pb-1 text-xs font-semibold text-slate-500">
-                /mês
-              </span>
             </div>
-            <p className="mb-3 text-sm leading-relaxed text-slate-600 md:mb-6">
-              Máxima visibilidade com destaque fixo e repost no Instagram.
-            </p>
-            <ul className="mb-auto grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13px] text-slate-700 md:block md:space-y-2 md:text-sm">
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                Destaque fixo
+            <p className="mb-6 text-sm text-slate-500">Máxima visibilidade + Repost</p>
+
+            <ul className="mb-8 flex-1 space-y-3 text-sm text-slate-700">
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                {obterPlano('exclusivo')?.duracao_dias ?? 60} dias de divulgação
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                Link para WhatsApp + Instagram
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Até 8 fotos
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                Até 10 fotos
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                WhatsApp + Instagram
               </li>
-              <li className="flex items-start gap-2">
-                <span className="font-bold text-emerald-600">✓</span>
-                Repost social
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Destaque na Home
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Repost no Instagram e Facebook
               </li>
             </ul>
+
             <Link
               href="/anunciar?plano=Exclusivo"
-              className="mt-3 block w-full rounded-xl bg-sky-600 py-2.5 md:mt-6 md:py-4 text-center font-bold text-white transition hover:scale-[1.02] hover:bg-sky-700 active:scale-95"
+              className="block w-full rounded-xl bg-violet-600 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-violet-700"
             >
-              Escolher plano →
+              Escolher Exclusivo
+            </Link>
+          </article>
+
+          {/* Agenda Local */}
+          <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-xl">
+                📍
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">Agenda Local</h3>
+            </div>
+
+            <div className="mb-1">
+              <span className="text-3xl font-extrabold text-slate-900">
+                {obterPlano('agenda_local') ? formatarPreco(obterPlano('agenda_local').valor) : 'R$ 19,90'}
+              </span>
+            </div>
+            <p className="mb-6 text-sm text-slate-500">Seja encontrado pelos moradores</p>
+
+            <ul className="mb-8 flex-1 space-y-3 text-sm text-slate-700">
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                {obterPlano('agenda_local')?.duracao_dias ?? 60} dias de divulgação
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                1 foto
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                WhatsApp + Instagram
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="text-emerald-500 font-bold">✓</span>
+                Carrossel da Home
+              </li>
+            </ul>
+
+            <Link
+              href="/agenda-local/cadastro"
+              className="block w-full rounded-xl bg-sky-600 py-3.5 text-center text-sm font-semibold text-white transition hover:bg-sky-700"
+            >
+              Escolher Agenda Local
             </Link>
           </article>
         </div>
-        <div className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-xs font-semibold text-emerald-800 md:hidden">
-          <span aria-hidden="true">🛡️</span>
-          Escolha com tranquilidade. Você acompanha seus anúncios pela Minha Conta.
-        </div>
-        {/* Tabela Comparativa - mantida no computador, ocultada no celular para reduzir rolagem */}
-        <section className="mb-16 mt-16 hidden md:block">
-          <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
-            Compare os Planos
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-center text-slate-600">
-            Compare os recursos, o período de divulgação e o nível de destaque
-            de cada opção.
-          </p>
-          <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow">
-            <table className="w-full min-w-[1000px] text-sm">
-              <thead className="border-b bg-slate-50">
-                <tr>
-                  <th className="p-5 text-left font-semibold text-slate-700">Recurso</th>
-                  <th className="p-5 text-center font-semibold">Gratuito</th>
-                  <th className="p-5 text-center font-semibold text-emerald-700">Direto do Produtor</th>
-                  <th className="p-5 text-center font-semibold">Agenda Local</th>
-                  <th className="p-5 text-center font-semibold">Impulso</th>
-                  <th className="p-5 text-center font-semibold text-amber-700">Vitrine</th>
-                  <th className="p-5 text-center font-semibold text-emerald-700">Exclusivo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y text-center">
-                <tr className="bg-slate-50">
-                  <td className="p-5 text-left font-medium">Valor</td>
-                  <td className="p-5 font-bold">{obterPlano('gratuito') ? formatarPreco(obterPlano('gratuito').valor) : 'R$ 0,00'}</td>
-                  <td className="p-5 font-bold">R$ 0,00</td>
-                  <td className="p-5 font-bold">{obterPlano('agenda_local') ? formatarPreco(obterPlano('agenda_local').valor) : 'R$ 19,90'}</td>
-                  <td className="p-5 font-bold">{obterPlano('impulso') ? formatarPreco(obterPlano('impulso').valor) : 'R$ 9,90'}</td>
-                  <td className="p-5 font-bold text-amber-600">{obterPlano('vitrine') ? formatarPreco(obterPlano('vitrine').valor) : 'R$ 19,90'}</td>
-                  <td className="p-5 font-bold text-emerald-600">{obterPlano('exclusivo') ? formatarPreco(obterPlano('exclusivo').valor) : 'R$ 29,90'}</td>
-                </tr>
-                <tr className="bg-white">
-                  <td className="p-5 text-left font-medium">Período de divulgação</td>
-                  <td className="p-5">{obterPlano('gratuito')?.duracao_dias ?? 30} dias</td>
-                  <td className="p-5">30 dias</td>
-                  <td className="p-5">{obterPlano('agenda_local')?.duracao_dias ?? 60} dias</td>
-                  <td className="p-5">{obterPlano('impulso')?.duracao_dias ?? 40} dias</td>
-                  <td className="p-5">{obterPlano('vitrine')?.duracao_dias ?? 45} dias</td>
-                  <td className="p-5">{obterPlano('exclusivo')?.duracao_dias ?? 60} dias</td>
-                </tr>
-                <tr className="bg-slate-50">
-                  <td className="p-5 text-left font-medium">Anúncios</td>
-                  <td className="p-5">1 anúncio</td>
-                  <td className="p-5">1 anúncio</td>
-                  <td className="p-5">Cadastro na Agenda</td>
-                  <td className="p-5">1 anúncio</td>
-                  <td className="p-5">1 anúncio</td>
-                  <td className="p-5">1 anúncio</td>
-                </tr>
-                <tr className="bg-white">
-                  <td className="p-5 text-left font-medium">Fotos</td>
-                  <td className="p-5">5 fotos</td>
-                  <td className="p-5">1 foto</td>
-                  <td className="p-5">1 foto</td>
-                  <td className="p-5">5 fotos</td>
-                  <td className="p-5">Até 8 fotos</td>
-                  <td className="p-5">Até 10 fotos</td>
-                </tr>
-                <tr className="bg-slate-50">
-                  <td className="p-5 text-left font-medium">WhatsApp</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Link direto</td>
-                </tr>
-                <tr className="bg-white">
-                  <td className="p-5 text-left font-medium">Instagram</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                </tr>
-                <tr className="bg-slate-50">
-                  <td className="p-5 text-left font-medium">Destaque na Home</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 font-semibold text-emerald-600">✓ Incluso</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5">Maior visibilidade</td>
-                  <td className="p-5 font-bold text-emerald-600">✓ Destaque fixo</td>
-                </tr>
-                <tr className="bg-white">
-                  <td className="p-5 text-left font-medium">Repost no Instagram</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 text-slate-400">—</td>
-                  <td className="p-5 font-bold text-emerald-600">✓ Incluso</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+
+ {/* Direto do Produtor */}
+<div className="mt-12 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-6 md:p-8">
+  
+  {/* Título */}
+  <div className="mb-8 text-center">
+    <div className="mb-2 text-3xl">🌱</div>
+    <h3 className="text-xl font-bold text-emerald-900 md:text-2xl">
+      Direto do Produtor
+    </h3>
+  </div>
+
+  {/* Textos lado a lado */}
+  <div className="mx-auto mb-8 grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-2 md:gap-0">
+    
+    {/* Texto da esquerda */}
+    <div className="flex flex-col items-center px-6 text-center md:items-start md:border-r md:border-emerald-200 md:px-10 md:text-left">
+      <div className="mb-3 text-2xl">🏡</div>
+      <p className="text-sm leading-relaxed text-slate-700 md:text-base">
+        Uma iniciativa de valorização local que oferece divulgação <strong>100% gratuita</strong>, 
+        incentivando o empreendedorismo, a produção artesanal e o desenvolvimento das pequenas cidades.
+      </p>
+    </div>
+
+    {/* Texto da direita */}
+    <div className="flex flex-col items-center px-6 text-center md:items-start md:px-10 md:text-left">
+      <div className="mb-3 text-2xl">💪</div>
+      <p className="text-sm leading-relaxed text-slate-700 md:text-base">
+        Nosso propósito vai além da divulgação. Queremos valorizar o trabalho de quem vive da própria atividade 
+        e contribuir para uma economia regional mais forte.
+      </p>
+    </div>
+  </div>
+
+  {/* Mensagem central + botão */}
+  <div className="text-center">
+    <p className="mb-5 text-sm font-medium text-emerald-800 md:text-base">
+      💚 Nosso objetivo não é cobrar de quem produz, mas ajudar quem trabalha.
+    </p>
+    
+    <Link
+      href="/direto-do-produtor"
+      className="inline-block rounded-xl bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+    >
+      Quero participar
+    </Link>
+  </div>
+</div>
+
+        {/* Mensagem final */}
+        <p className="mt-10 text-center text-sm text-slate-500">
+          🛡️ Escolha com tranquilidade. Você acompanha seus anúncios pela Minha Conta.
+        </p>
       </div>
     </main>
   );

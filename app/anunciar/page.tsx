@@ -1093,49 +1093,54 @@ buttonClass:
     return <CarregandoPagina />;
   }
   if (precisaLogin) {
-    const planoUrl =
-      searchParams.get('plano');
-    const categoriaUrl =
-      searchParams.get('categoria');
+    const planoUrl = searchParams.get('plano');
+    const categoriaUrl = searchParams.get('categoria');
     const parametros = new URLSearchParams();
     if (planoUrl) {
       parametros.set('plano', planoUrl);
     }
     if (categoriaUrl) {
-      parametros.set(
-        'categoria',
-        categoriaUrl
-      );
+      parametros.set('categoria', categoriaUrl);
     }
     const destino = parametros.toString()
       ? `/anunciar?${parametros.toString()}`
       : '/anunciar';
+
+    const nomePlano = planos.some((plano) => plano.nome === planoUrl)
+      ? planoUrl!
+      : 'Gratuito';
+    const gratuito = nomePlano === 'Gratuito';
+
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10 text-slate-800">
         <section className="w-full max-w-lg rounded-2xl border border-orange-200 bg-white p-6 text-center shadow-lg sm:p-8">
           <div className="mx-auto inline-flex rounded-full bg-orange-100 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-orange-700">
-            Anúncio gratuito
+            Plano {nomePlano}
           </div>
           <h1 className="mt-4 text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
-            Anuncie grátis na sua cidade
+            {gratuito ? 'Vamos começar seu anúncio gratuito!' : 'Vamos começar seu anúncio!'}
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
-            Divulgue seu produto, serviço, imóvel ou veículo de forma simples no Portal Conecta Cidade.
+            {gratuito
+              ? 'Antes de anunciar, entre na sua conta ou crie seu cadastro gratuito.'
+              : `Você escolheu o Plano ${nomePlano}. Veja como continuar:`}
           </p>
           <div className="mt-6 grid gap-3 text-left">
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
-                ✓ {obterDiasPlano('gratuito', 7)} dias grátis
+                1. Entre na sua conta ou crie seu cadastro gratuito.
               </p>
             </div>
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
-                ✓ Apareça para quem mora na cidade
+                2. Preencha os dados e adicione as fotos do anúncio.
               </p>
             </div>
             <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
               <p className="font-bold text-slate-900">
-                ✓ Rápido e fácil
+                {gratuito
+                  ? '3. Envie seu anúncio para análise da administração.'
+                  : '3. Continue para o pagamento do plano escolhido.'}
               </p>
             </div>
           </div>
@@ -1143,17 +1148,15 @@ buttonClass:
             type="button"
             onClick={() =>
               router.push(
-                `/login?redirect=${encodeURIComponent(
-                  destino
-                )}`
+                `/login?redirect=${encodeURIComponent(destino)}`
               )
             }
             className="mt-7 w-full rounded-xl bg-orange-600 px-5 py-4 text-sm font-extrabold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700"
           >
-            Quero anunciar grátis
+            {gratuito ? 'Continuar com o Plano Gratuito' : `Continuar com o Plano ${nomePlano}`}
           </button>
           <p className="mt-4 text-xs leading-relaxed text-slate-500">
-            Ao continuar, você poderá entrar na sua conta ou criar seu cadastro.
+            Já tem uma conta? Basta entrar. Ainda não tem? Você poderá criar uma gratuitamente.
           </p>
         </section>
       </main>
