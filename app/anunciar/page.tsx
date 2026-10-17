@@ -1180,7 +1180,7 @@ buttonClass:
       </section>
       {/* TRÊS COLUNAS */}
       <div className="mx-auto max-w-[1500px] px-3 py-5 md:px-6 md:py-10">
-        <div className="grid items-start gap-7 lg:grid-cols-12">
+       <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-12 lg:gap-7">
           {/* CARD FORMULÁRIO */}
           <section className="lg:col-span-5">
             <div className="rounded-2xl border border-sky-300 bg-white p-4 shadow-lg md:p-7">
@@ -1669,107 +1669,84 @@ className={`relative flex min-h-[145px] flex-col justify-between rounded-xl bord
               </form>
             </div>
           </section>
-          {/* CARD AGENDA LOCAL */}
-          <section className="lg:col-span-4">
-            <div className="rounded-2xl border border-orange-300 bg-white p-4 shadow-lg md:p-6">
-              <FaixaCard
-                texto="Faça parte do nosso guia de profissionais!"
-                classe="bg-orange-600"
-              />
-              <h2 className="mt-5 text-center text-xl font-black uppercase leading-tight text-slate-900 md:mt-6 md:text-2xl">
-                Agenda Local
-              </h2>
-              <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-center">
-                <p className="text-xl font-black text-orange-700">
-                  R$ 19,90
-                </p>
-                <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-slate-700">
-                  60 dias de divulgação
-                </p>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Divulgue sua empresa, profissão ou serviço para moradores da cidade encontrarem seu contato com facilidade.
-              </p>
-              <p className="mt-4 text-sm font-bold text-slate-900">
-                Alguns profissionais e serviços que podem participar:
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 md:grid-cols-1 md:text-sm xl:grid-cols-2">
-                <CategoriaServicoSimples titulo="Saúde e utilidade pública" />
-                <CategoriaServicoSimples titulo="Profissionais da saúde" />
-                <CategoriaServicoSimples titulo="Beleza e bem-estar" />
-                <CategoriaServicoSimples titulo="Construção e manutenção" />
-                <CategoriaServicoSimples titulo="Automotivo" />
-                <CategoriaServicoSimples titulo="Profissionais e empresas" />
-              </div>
-              <p className="mt-3 text-xs italic text-slate-500">
-                E outros serviços e profissionais da região.
-              </p>
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(
-                    '/agenda-local/cadastro'
-                  )
-                }
-                className="mt-5 w-full rounded-xl bg-orange-600 px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700 md:mt-6 md:py-4"
-              >
-                Cadastrar na Agenda — R$ 19,90
-              </button>
-            </div>
-          </section>
-          {/* CARD DIRETO DO PRODUTOR */}
-          <section className="lg:col-span-3">
-            <div className="rounded-2xl border border-emerald-300 bg-white p-4 shadow-lg md:p-6">
-              <FaixaCard
-                texto="Programa Direto do Produtor"
-                classe="bg-emerald-600"
-              />
-              <h2 className="mt-5 text-center text-xl font-black leading-tight text-slate-900 md:mt-6 md:text-2xl">
-                Divulgue gratuitamente sua produção local!
-              </h2>
-              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center">
-                <p className="text-xl font-black text-emerald-700">
-                  GRATUITO
-                </p>
-                <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-slate-700">
-                  Divulgação por até 30 dias
-                </p>
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-slate-700">
-                Espaço destinado a pequenos produtores rurais, agricultores familiares, artesãos e produtores de alimentos da sua cidade e região.
-              </p>
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                <ul className="space-y-2 text-sm font-medium text-slate-800">
-                  <ItemProdutor texto="Vagas limitadas" />
-                  <ItemProdutor texto="Seleção realizada pela administração" />
-                  <ItemProdutor texto="Rotatividade para dar oportunidade a novos produtores" />
-                  <ItemProdutor texto="Lista de espera quando as vagas estiverem preenchidas" />
-                </ul>
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(
-                    '/direto-do-produtor/participar'
-                  )
-                }
-                className="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-emerald-700 md:mt-6 md:py-4"
-              >
-                Participar gratuitamente
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  router.push(
-                    '/direto-do-produtor'
-                  )
-                }
-                className="mt-3 w-full rounded-xl border border-emerald-600 bg-white px-5 py-3 text-xs font-bold uppercase tracking-wide text-emerald-700 transition hover:bg-emerald-50"
-              >
-                Ver produtores selecionados
-              </button>
-            </div>
-          </section>
+    {/* CARD AGENDA LOCAL */}
+<section className="lg:col-span-4">
+  <div className="rounded-2xl border border-orange-300 bg-white p-4 shadow-lg md:p-6">
+    <img
+      src="/agenda-profissionais.jpg"
+      alt="Profissionais locais"
+      className="mb-4 h-40 w-full rounded-xl object-cover"
+    />
+    <FaixaCard
+      texto="Agenda Local"
+      classe="bg-orange-600"
+    />
+    <h2 className="mt-4 text-center text-lg font-black uppercase leading-tight text-slate-900 md:text-xl">
+      Seu trabalho merece ser encontrado!
+    </h2>
+    <p className="mt-3 text-sm leading-relaxed text-slate-700">
+      Divulgue sua profissão, empresa ou serviço e aumente suas oportunidades de ser encontrado por moradores da sua cidade e da região.
+    </p>
+    <div className="mt-3 rounded-xl border border-orange-200 bg-orange-50 p-3 text-xs text-slate-700 md:text-sm">
+      <p className="font-bold text-slate-900">Destaques:</p>
+      <ul className="mt-1 space-y-0.5">
+        <li>✓ Visibilidade regional</li>
+        <li>✓ Contatos facilitados</li>
+        <li>✓ Valorização dos profissionais locais</li>
+      </ul>
+    </div>
+    <button
+      type="button"
+      onClick={() => router.push('/agenda-local/cadastro')}
+      className="mt-4 w-full rounded-xl bg-orange-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-orange-700"
+    >
+      Cadastrar na Agenda — R$ 19,90
+    </button>
+  </div>
+</section>
+
+{/* CARD DIRETO DO PRODUTOR */}
+<section className="lg:col-span-3">
+  <div className="rounded-2xl border border-emerald-300 bg-white p-4 shadow-lg md:p-6">
+    <img
+      src="/produtor-alimentos.jpg"
+      alt="Produtos da roça e artesanato"
+      className="mb-4 h-40 w-full rounded-xl object-cover"
+    />
+    <FaixaCard
+      texto="Direto do Produtor"
+      classe="bg-emerald-600"
+    />
+    <h2 className="mt-4 text-center text-lg font-black leading-tight text-slate-900 md:text-xl">
+      Quem produz merece ser valorizado!
+    </h2>
+    <p className="mt-3 text-sm leading-relaxed text-slate-700">
+      Mostre seus produtos, alimentos artesanais ou trabalhos manuais para moradores da sua cidade e de cidades próximas.
+    </p>
+    <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-slate-700 md:text-sm">
+      <p className="font-bold text-slate-900">Destaques:</p>
+      <ul className="mt-1 space-y-0.5">
+        <li>✓ 30 dias gratuitos</li>
+        <li>✓ Vagas limitadas</li>
+        <li>✓ Rotatividade para novos participantes</li>
+      </ul>
+    </div>
+    <button
+      type="button"
+      onClick={() => router.push('/direto-do-produtor/participar')}
+      className="mt-4 w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold uppercase tracking-wide text-white shadow-md transition hover:bg-emerald-700"
+    >
+      Participar gratuitamente
+    </button>
+    <button
+      type="button"
+      onClick={() => router.push('/direto-do-produtor')}
+      className="mt-2 w-full rounded-xl border border-emerald-600 bg-white px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-emerald-700 transition hover:bg-emerald-50"
+    >
+      Ver produtores selecionados
+    </button>
+  </div>
+</section>
         </div>
       </div>
     </main>
